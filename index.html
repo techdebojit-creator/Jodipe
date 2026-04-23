@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+team1 html>
 <html>
 <head>
   <title>Jodi11 IPL</title>
@@ -148,11 +148,11 @@ function loadPlayers() {
   p1.innerHTML="";
   p2.innerHTML="";
 
-  db.ref("Players/"+m+"/team1").once("value").then(snap=>{
+  db.ref("Players/"+m+"/team2").once("value").then(snap=>{
     snap.forEach(d=>p1.innerHTML+=`<option>${d.val()}</option>`);
   });
 
-  db.ref("Players/"+m+"/team2").once("value").then(snap=>{
+  db.ref("Players/"+m+"/CSK").once("value").then(snap=>{
     snap.forEach(d=>p2.innerHTML+=`<option>${d.val()}</option>`);
   });
 
