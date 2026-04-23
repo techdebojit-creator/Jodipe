@@ -24,7 +24,7 @@
 <body>
 
 <div class="navbar d-flex justify-content-between align-items-center px-3">
-    <h5 class="m-0 fw-bold">🏏 JODI11 PRO By SB</h5>
+    <h5 class="m-0 fw-bold">🏏 JODI11 PRO</h5>
     <div id="coinArea" class="hidden">
         <div class="coin-badge">
             💰 <span id="displayCoins">0</span>
@@ -47,7 +47,6 @@
 
     <div id="coinFormSection" class="card p-4 hidden">
         <h6 class="fw-bold text-primary mb-3">💰 कॉइन्ससाठी विनंती करा</h6>
-        <p class="small text-muted">Admin ला पेमेंट केल्यानंतर खालील माहिती भरा.</p>
         <input id="reqMobile" class="form-control mb-2" placeholder="Mobile No." type="number">
         <input id="reqUTR" class="form-control mb-3" placeholder="UTR / Transaction ID">
         <button onclick="submitCoinRequest()" class="btn btn-warning w-100 fw-bold">SUBMIT REQUEST</button>
@@ -58,8 +57,21 @@
         <div class="card p-3 mb-3">
             <select id="matchSelect" class="form-select mb-3" onchange="checkMatchStatus()">
                 <option value="">-- मॅच निवडा --</option>
-                <option value="MI_vs_CSK" data-t1="MI" data-t2="CSK">MI vs CSK</option>
-                <option value="RCB_vs_SRH" data-t1="RCB" data-t2="SRH">RCB vs SRH</option>
+                <option value="RCB_vs_GT" data-t1="RCB" data-t2="GT">24 Apr: RCB vs GT</option>
+                <option value="DC_vs_PBKS" data-t1="DC" data-t2="PBKS">25 Apr: DC vs PBKS (3:30 PM)</option>
+                <option value="RR_vs_SRH" data-t1="RR" data-t2="SRH">25 Apr: RR vs SRH (7:30 PM)</option>
+                <option value="CSK_vs_GT" data-t1="CSK" data-t2="GT">26 Apr: CSK vs GT (3:30 PM)</option>
+                <option value="LSG_vs_KKR" data-t1="LSG" data-t2="KKR">26 Apr: LSG vs KKR (7:30 PM)</option>
+                <option value="DC_vs_RCB" data-t1="DC" data-t2="RCB">27 Apr: DC vs RCB</option>
+                <option value="PBKS_vs_RR" data-t1="PBKS" data-t2="RR">28 Apr: PBKS vs RR</option>
+                <option value="MI_vs_SRH" data-t1="MI" data-t2="SRH">29 Apr: MI vs SRH</option>
+                <option value="GT_vs_RCB" data-t1="GT" data-t2="RCB">30 Apr: GT vs RCB</option>
+                <option value="RR_vs_DC" data-t1="RR" data-t2="DC">01 May: RR vs DC</option>
+                <option value="CSK_vs_MI" data-t1="CSK" data-t2="MI">02 May: CSK vs MI</option>
+                <option value="SRH_vs_KKR" data-t1="SRH" data-t2="KKR">03 May: SRH vs KKR (3:30 PM)</option>
+                <option value="GT_vs_PBKS" data-t1="GT" data-t2="PBKS">03 May: GT vs PBKS (7:30 PM)</option>
+                <option value="MI_vs_LSG" data-t1="MI" data-t2="LSG">04 May: MI vs LSG</option>
+                <option value="DC_vs_CSK" data-t1="DC" data-t2="CSK">05 May: DC vs CSK</option>
             </select>
 
             <div id="activeMatchArea" class="hidden">
@@ -78,7 +90,7 @@
         </div>
 
         <div id="myDashboard" class="hidden"><h6 class="fw-bold text-success small">🎯 माझी जोडी</h6><div id="myList"></div></div>
-        <div id="scoreArea"><h6 class="fw-bold mb-2 small">📊 स्कोअरबोर्ड</h6><div id="joinList" class="card p-3"></div></div>
+        <div id="scoreArea"><h6 class="fw-bold mb-2 small">📊 स्कोअरボード</h6><div id="joinList" class="card p-3"></div></div>
 
         <div class="d-grid gap-2 mt-4 pb-5">
             <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark hidden">⚙️ ADMIN CONTROL</button>
@@ -89,7 +101,6 @@
     <div id="adminSection" class="card p-4 hidden">
         <h6 class="fw-bold text-danger border-bottom pb-2">⚙️ ADMIN CONTROL</h6>
         <div class="bg-light p-2 rounded mb-3">
-            <label class="small fw-bold">Coins Add Kara:</label>
             <input id="targetUser" class="form-control form-control-sm mb-1" placeholder="User ID">
             <input id="addAmount" type="number" class="form-control form-control-sm mb-1" placeholder="Amount">
             <button onclick="updateUserCoins()" class="btn btn-warning btn-sm w-100">Add Coins</button>
@@ -101,6 +112,7 @@
 </div>
 
 <script>
+// --- Configuration & Initialization (Existing Firebase Setup) ---
 const firebaseConfig = { apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs", databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -110,15 +122,22 @@ let isLoginMode = true;
 const ADMINS = ["admin", "santoshbagul"];
 
 const squad2026 = {
-    "MI": { logo: "https://documents.iplt20.com/ipl/MI/Logos/Logo_Round/MI_Logo_Round.png", players: ["Hardik Pandya", "Rohit Sharma", "Suryakumar Yadav", "Jasprit Bumrah"] },
-    "CSK": { logo: "https://documents.iplt20.com/ipl/CSK/Logos/Logo_Round/CSK_Logo_Round.png", players: ["Ruturaj Gaikwad", "MS Dhoni", "Sanju Samson", "Shivam Dube"] },
-    "RCB": { logo: "https://documents.iplt20.com/ipl/RCB/Logos/Logo_Round/RCB_Logo_Round.png", players: ["Virat Kohli", "Rajat Patidar", "Phil Salt"] },
-    "SRH": { logo: "https://documents.iplt20.com/ipl/SRH/Logos/Logo_Round/SRH_Logo_Round.png", players: ["Pat Cummins", "Travis Head", "Abhishek Sharma"] }
+    "RCB": { logo: "https://documents.iplt20.com/ipl/RCB/Logos/Logo_Round/RCB_Logo_Round.png", players: ["Virat Kohli", "Rajat Patidar", "Phil Salt", "Siraj"] },
+    "GT": { logo: "https://documents.iplt20.com/ipl/GT/Logos/Logo_Round/GT_Logo_Round.png", players: ["Shubman Gill", "Rashid Khan", "Sai Sudharsan", "Miller"] },
+    "DC": { logo: "https://documents.iplt20.com/ipl/DC/Logos/Logo_Round/DC_Logo_Round.png", players: ["Rishabh Pant", "Axar Patel", "Kuldeep Yadav"] },
+    "PBKS": { logo: "https://documents.iplt20.com/ipl/PBKS/Logos/Logo_Round/PBKS_Logo_Round.png", players: ["Arshdeep Singh", "Sam Curran", "Shashank Singh"] },
+    "RR": { logo: "https://documents.iplt20.com/ipl/RR/Logos/Logo_Round/RR_Logo_Round.png", players: ["Sanju Samson", "Yashasvi Jaiswal", "Riyan Parag"] },
+    "SRH": { logo: "https://documents.iplt20.com/ipl/SRH/Logos/Logo_Round/SRH_Logo_Round.png", players: ["Travis Head", "Abhishek Sharma", "Klaasen"] },
+    "CSK": { logo: "https://documents.iplt20.com/ipl/CSK/Logos/Logo_Round/CSK_Logo_Round.png", players: ["Ruturaj Gaikwad", "MS Dhoni", "Jadeja"] },
+    "LSG": { logo: "https://documents.iplt20.com/ipl/LSG/Logos/Logo_Round/LSG_Logo_Round.png", players: ["Nicholas Pooran", "Quinton de Kock", "KL Rahul"] },
+    "KKR": { logo: "https://documents.iplt20.com/ipl/KKR/Logos/Logo_Round/KKR_Logo_Round.png", players: ["Shreyas Iyer", "Rinku Singh", "Sunil Narine"] },
+    "MI": { logo: "https://documents.iplt20.com/ipl/MI/Logos/Logo_Round/MI_Logo_Round.png", players: ["Hardik Pandya", "Rohit Sharma", "Suryakumar Yadav"] }
 };
 
 window.onload = () => { if(localStorage.getItem("jodiUser")) startSession(localStorage.getItem("jodiUser")); };
 
-// AUTH
+// [Existing Auth Functions: toggleAuthMode, signup, login, startSession, showCoinForm, submitCoinRequest remain unchanged]
+
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     authTitle.innerText = isLoginMode ? "लॉगिन करा" : "नवीन खाते उघडा";
@@ -128,17 +147,17 @@ function toggleAuthMode() {
 
 function signup() {
     let u = username.value.toLowerCase().trim(); let p = password.value.trim();
-    if(!u || !p) return alert("Fill all!");
+    if(!u || !p) return alert("सर्व माहिती भरा!");
     db.ref("Users/"+u).once("value", s => {
-        if(s.exists()) return alert("User ID busy!");
-        db.ref("Users/"+u).set({password:p, coins:0}).then(()=> { alert("Created! Login now."); toggleAuthMode(); });
+        if(s.exists()) return alert("User ID आधीच घेतला आहे!");
+        db.ref("Users/"+u).set({password:p, coins:0}).then(()=> { alert("Account Created! Login करा."); toggleAuthMode(); });
     });
 }
 
 function login() {
     let u = username.value.toLowerCase().trim(); let p = password.value.trim();
     db.ref("Users/"+u).once("value", s => {
-        if(!s.exists() || s.val().password !== p) return alert("Wrong!");
+        if(!s.exists() || s.val().password !== p) return alert("चुकीचा ID/Pass!");
         localStorage.setItem("jodiUser", u); startSession(u);
     });
 }
@@ -150,27 +169,16 @@ function startSession(u) {
     runMatch.innerHTML = matchSelect.innerHTML;
 }
 
-// COIN REQUEST
 function showCoinForm() { homeSection.classList.add("hidden"); coinFormSection.classList.remove("hidden"); }
 
 function submitCoinRequest() {
-    let mob = document.getElementById("reqMobile").value;
-    let utr = document.getElementById("reqUTR").value;
+    let mob = reqMobile.value; let utr = reqUTR.value;
     if(!mob || !utr) return alert("सर्व माहिती भरा!");
-
-    db.ref("CoinRequests").push({
-        user: currentUser,
-        mobile: mob,
-        utr: utr,
-        status: "Pending",
-        time: new Date().toLocaleString()
-    }).then(() => {
-        alert("तुमची विनंती Admin कडे पाठवली आहे. लवकरच कॉइन्स ॲड होतील.");
-        goHome();
-    });
+    db.ref("CoinRequests").push({ user: currentUser, mobile: mob, utr: utr, status: "Pending", time: new Date().toLocaleString() })
+    .then(() => { alert("विनंती पाठवली आहे!"); goHome(); });
 }
 
-// MATCH LOGIC
+// MATCH LOGIC & SCORE (Same as before but with new schedule support)
 function checkMatchStatus() {
     let sel = matchSelect; if(!sel.value) return;
     let t1 = sel.options[sel.selectedIndex].getAttribute("data-t1");
@@ -187,7 +195,7 @@ function loadPlayers(mid, t1, t2) {
             let up = {};
             squad2026[t1].players.forEach((p, i) => up[`team1/p${i+1}`] = p);
             squad2026[t2].players.forEach((p, i) => up[`team2/p${i+11}`] = p);
-            db.ref("Players/"+mid).update(up).then(() => rendPROropdowns(mid));
+            db.ref("Players/"+mid).update(up).then(() => renderDropdowns(mid));
         } else renderDropdowns(mid);
     });
 }
@@ -203,26 +211,17 @@ function joinMatch() {
     let pairID = p1.value + "|" + p2.value;
     let pairNames = p1.options[p1.selectedIndex].text + " & " + p2.options[p2.selectedIndex].text;
 
-    // --- CHECK FOR DUPLICATE JODI (STRICT) ---
     db.ref("Selections/"+mid).once("value", snap => {
         let isAlreadyPicked = false;
-        snap.forEach(child => {
-            if(child.val().user === currentUser && child.val().pairID === pairID) {
-                isAlreadyPicked = true;
-            }
-        });
-
-        if(isAlreadyPicked) {
-            alert("तुम्ही ही जोडी आधीच निवडली आहे! दुसरी जोडी निवडा.");
-            return;
-        }
+        snap.forEach(child => { if(child.val().user === currentUser && child.val().pairID === pairID) isAlreadyPicked = true; });
+        if(isAlreadyPicked) return alert("ही जोडी आधीच निवडली आहे!");
 
         db.ref("Users/"+currentUser+"/coins").once("value", c => {
             let bal = c.val() || 0;
-            if(bal < 200) return alert("पुरेशी कॉइन्स नाहीत! + वर क्लिक करून ॲड करा.");
+            if(bal < 200) return alert("पुरेशी कॉइन्स नाहीत!");
             db.ref("Users/"+currentUser+"/coins").set(bal - 200);
             db.ref("Selections/"+mid).push({user: currentUser, pairID: pairID, pairNames: pairNames});
-            alert("जोडी यशस्वीरित्या लावली!");
+            alert("जोडी लावली!");
         });
     });
 }
@@ -243,12 +242,10 @@ function refreshScore(mid) {
     });
 }
 
-// ADMIN
+// ADMIN FUNCTIONS (Unchanged)
 function updateUserCoins() {
     let t = targetUser.value.toLowerCase().trim(); let a = parseInt(addAmount.value);
-    db.ref("Users/"+t+"/coins").once("value", s => {
-        db.ref("Users/"+t+"/coins").set((s.val()||0) + a).then(()=>alert("Coins Added!"));
-    });
+    db.ref("Users/"+t+"/coins").once("value", s => db.ref("Users/"+t+"/coins").set((s.val()||0) + a).then(()=>alert("Added!")));
 }
 function loadAdminPlayers() {
     let mid = runMatch.value; if(!mid) return;
