@@ -119,7 +119,8 @@ function signup() {
 function login() {
   let u = document.getElementById("username").value.trim();
   let p = document.getElementById("password").value.trim();
-
+console.log("Username:", u);
+console.log("Password:", p);
   db.ref("Users/" + u).once("value")
   .then((snap) => {
 
@@ -131,7 +132,7 @@ function login() {
     let data = snap.val();
 
     console.log(data);
-
+console.log("Firebase Data:", d);
     if (data.password === p) {
       currentUser = u;
       showHome(data.coins);
