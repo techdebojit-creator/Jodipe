@@ -3,208 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jodi11 IPL Pro</title>
+    <title>Jodi11 IPL - Multi-Lang</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <style>
-        body { background: #f0f2f5; font-family: sans-serif; }
-        .navbar { background: #1a237e; color: white; padding: 12px; text-align: center; font-weight: bold; }
-        .card { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        :root { --primary: #1a237e; --secondary: #ffab00; --bg: #f0f2f5; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); }
+        .navbar { background: linear-gradient(135deg, #1a237e, #0d47a1); color: white; padding: 15px; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; }
+        .lang-switch { position: absolute; right: 15px; top: 15px; }
+        .card { border: none; border-radius: 20px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .coin-card { background: linear-gradient(135deg, #ffca28, #ff8f00); color: white; padding: 12px; border-radius: 15px; text-align: center; }
         .hidden { display: none !important; }
-        .joined-item { background: white; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 5px solid #1a237e; }
-        .score-badge { background: #ff5722; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+        .score-item { background: #fff; border-radius: 12px; padding: 10px; margin-bottom: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; }
+        .btn-join { background: #2e7d32; color: white; border-radius: 10px; width: 100%; font-weight: 600; border: none; padding: 10px; }
     </style>
 </head>
 <body>
 
-<div class="navbar">🏏 JODI11 IPL PRO</div>
+<div class="navbar">
+    <h4 class="m-0 fw-bold">🏏 JODI11</h4>
+    <div class="lang-switch">
+        <select id="langSelect" class="form-select form-select-sm" onchange="changeLanguage()">
+            <option value="mr">मराठी</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+</div>
 
 <div class="container mt-3">
+
     <div id="loginSection" class="card p-4 mx-auto" style="max-width: 400px;">
+        <h5 class="text-center fw-bold mb-3" data-key="loginTitle">Login</h5>
         <input id="username" class="form-control mb-2" placeholder="Username">
         <input id="password" type="password" class="form-control mb-3" placeholder="Password">
-        <button onclick="login()" class="btn btn-primary w-100">Login</button>
-        <button onclick="signup()" class="btn btn-link w-100 btn-sm">Create Account</button>
+        <button onclick="login()" class="btn btn-primary w-100 fw-bold" data-key="loginBtn">LOGIN</button>
+        <button onclick="signup()" class="btn btn-link w-100 mt-1 small" data-key="signupBtn">Signup</button>
     </div>
 
     <div id="homeSection" class="hidden">
-        <div class="d-flex justify-content-between mb-3">
-            <b>👤 <span id="displayUser"></span></b>
-            <b class="text-success">💰 <span id="displayCoins">0</span></b>
+        <div class="row g-2 mb-3">
+            <div class="col-6"><div class="card p-2 text-center">👤 <b id="displayUser">--</b></div></div>
+            <div class="col-6"><div class="coin-card"><small data-key="coins">Coins</small><br><b id="displayCoins">0</b></div></div>
         </div>
 
         <div class="card p-3">
-            <label class="small fw-bold">Select Match</label>
-            <select id="matchSelect" class="form-select mb-3" onchange="loadPlayers()"></select>
-            
-            <div id="playerSelection" class="hidden">
-                <div class="row g-2">
+            <label class="small fw-bold mb-1" data-key="selectMatch">Select Match</label>
+            <select id="matchSelect" class="form-select mb-3" onchange="checkMatchStatus()">
+                <option value="" data-key="optMatch">-- Choose --</option>
+                <option value="MI_vs_CSK" data-date="2026-04-23">MI vs CSK (23 April)</option>
+                <option value="RCB_vs_KKR" data-date="2026-04-24">RCB vs KKR (24 April)</option>
+            </select>
+
+            <div id="activeMatchArea" class="hidden">
+                <div class="row g-2 mb-2">
                     <div class="col-6"><select id="p1" class="form-select"></select></div>
                     <div class="col-6"><select id="p2" class="form-select"></select></div>
                 </div>
-                <button onclick="joinMatch()" class="btn btn-success w-100 mt-3">Join Contest (200)</button>
-                <p id="msg" class="text-center mt-2 small"></p>
+                <button onclick="joinMatch()" class="btn btn-join" data-key="joinBtn">JOIN (200 Coins)</button>
             </div>
+            <div id="statusMsg" class="alert alert-warning text-center small fw-bold hidden"></div>
         </div>
 
-        <div id="joinedSection" class="hidden">
-            <h6 class="fw-bold">📊 Real-time Scoreboard</h6>
+        <div id="scoreArea" class="mt-3">
+            <h6 class="fw-bold" data-key="scoreTitle">📊 Live Scoreboard</h6>
             <div id="joinList"></div>
         </div>
 
-        <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark w-100 mt-3 hidden">⚙️ Admin Panel</button>
-        <button onclick="location.reload()" class="btn btn-light w-100 mt-2 btn-sm">Logout</button>
+        <div class="d-grid gap-2 mt-3">
+            <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark hidden">⚙️ ADMIN</button>
+            <button onclick="location.reload()" class="btn btn-outline-danger btn-sm" data-key="logout">LOGOUT</button>
+        </div>
     </div>
 
     <div id="adminSection" class="card p-4 hidden">
-        <h6>⚙️ Admin Control</h6>
-        <div class="border p-2 mb-3 rounded">
-            <input id="admMatch" class="form-control form-control-sm mb-2" placeholder="Match (e.g. MI_CSK)">
-            <select id="admTeam" class="form-select form-select-sm mb-2"><option value="team1">Team 1</option><option value="team2">Team 2</option></select>
-            <input id="admPlayer" class="form-control form-control-sm mb-2" placeholder="Player Name">
-            <button onclick="addPlayer()" class="btn btn-danger btn-sm w-100">Add Player</button>
-        </div>
-        <div class="border p-2 bg-light rounded">
-            <select id="runMatch" class="form-select form-select-sm mb-2" onchange="loadAdminPlayers()"></select>
-            <select id="runPlayer" class="form-select form-select-sm mb-2"></select>
-            <input id="newRuns" type="number" class="form-control form-control-sm mb-2" placeholder="Total Runs">
-            <button onclick="updateRuns()" class="btn btn-primary btn-sm w-100">Update Score</button>
-        </div>
+        <h6 class="fw-bold text-danger">Admin Panel</h6>
+        <select id="runMatch" class="form-select mb-2" onchange="loadAdminPlayers()"></select>
+        <select id="admTeam" class="form-select mb-2"><option value="team1">Team 1</option><option value="team2">Team 2</option></select>
+        <input id="admPlayer" class="form-control mb-2" placeholder="Player Name">
+        <button onclick="addPlayer()" class="btn btn-primary btn-sm w-100 mb-3">Save Player</button>
+        <hr>
+        <select id="runPlayer" class="form-select mb-2"></select>
+        <input id="newRuns" type="number" class="form-control mb-2" placeholder="Runs">
+        <button onclick="updateRuns()" class="btn btn-warning btn-sm w-100">Update Score</button>
         <button onclick="goHome()" class="btn btn-link w-100">Back</button>
     </div>
 </div>
 
 <script>
-const firebaseConfig = {
-    apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs",
-    databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com"
-};
+// --- FIREBASE ---
+const firebaseConfig = { apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs", databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let currentUser = "";
 const ADMINS = ["admin", "santoshbagul"];
 
-function signup() {
-    let u = username.value.toLowerCase().trim();
-    let p = password.value.trim();
-    if(!u || !p) return;
-    db.ref("Users/"+u).once("value", s => {
-        if(s.exists()) return alert("User exists!");
-        db.ref("Users/"+u).set({password:p, coins:2000}).then(()=>alert("Signup OK!"));
+// --- LANGUAGE DATA ---
+const langData = {
+    mr: {
+        loginTitle: "लॉगिन करा",
+        loginBtn: "लॉगिन",
+        signupBtn: "नवीन खाते उघडा",
+        coins: "माझे कॉइन्स",
+        selectMatch: "मॅच निवडा",
+        optMatch: "-- मॅच निवडा --",
+        joinBtn: "जोडी लावा (200 कॉइन्स)",
+        scoreTitle: "📊 लाईव्ह स्कोअरबोर्ड",
+        logout: "बाहेर पडा",
+        msgSoon: "🔒 मॅच लवकरच सुरू होईल",
+        msgEnd: "⌛ मॅच संपली आहे"
+    },
+    en: {
+        loginTitle: "Login Account",
+        loginBtn: "LOGIN",
+        signupBtn: "Create New Account",
+        coins: "My Coins",
+        selectMatch: "Select Today's Match",
+        optMatch: "-- Choose Match --",
+        joinBtn: "Join Contest (200 Coins)",
+        scoreTitle: "📊 Live Scoreboard",
+        logout: "LOGOUT",
+        msgSoon: "🔒 Match Coming Soon",
+        msgEnd: "⌛ Match Finished"
+    }
+};
+
+function changeLanguage() {
+    let lang = document.getElementById("langSelect").value;
+    let keys = document.querySelectorAll("[data-key]");
+    keys.forEach(el => {
+        let key = el.getAttribute("data-key");
+        if (langData[lang][key]) {
+            el.innerText = langData[lang][key];
+        }
     });
 }
 
+// --- CORE FUNCTIONS ---
 function login() {
-    let u = username.value.toLowerCase().trim();
-    let p = password.value.trim();
+    let u = document.getElementById("username").value.toLowerCase().trim();
+    let p = document.getElementById("password").value.trim();
     db.ref("Users/"+u).once("value", s => {
-        if(!s.exists() || s.val().password !== p) return alert("Wrong!");
+        if(!s.exists() || s.val().password !== p) return alert("Error!");
         currentUser = u;
-        loginSection.classList.add("hidden");
-        homeSection.classList.remove("hidden");
-        displayUser.innerText = u;
-        db.ref("Users/"+u+"/coins").on("value", sn => displayCoins.innerText = sn.val());
-        if(ADMINS.includes(u)) adminBtn.classList.remove("hidden");
+        document.getElementById("loginSection").classList.add("hidden");
+        document.getElementById("homeSection").classList.remove("hidden");
+        document.getElementById("displayUser").innerText = u;
+        db.ref("Users/"+u+"/coins").on("value", sn => document.getElementById("displayCoins").innerText = sn.val());
+        if(ADMINS.includes(u)) document.getElementById("adminBtn").classList.remove("hidden");
         loadMatches();
+        changeLanguage(); // Apply selected language after login
     });
+}
+
+function signup() {
+    let u = document.getElementById("username").value.toLowerCase().trim();
+    let p = document.getElementById("password").value.trim();
+    db.ref("Users/"+u).set({password:p, coins:2000}).then(()=>alert("Signup Done!"));
 }
 
 function loadMatches() {
     db.ref("Players").once("value", snap => {
-        let opt = "<option value=''>-- Select Match --</option>";
-        snap.forEach(m => opt += `<option value="${m.key}">${m.key}</option>`);
-        matchSelect.innerHTML = opt;
-        runMatch.innerHTML = opt;
+        let opt = `<option value="">${langData[langSelect.value].optMatch}</option>`;
+        // Note: Using pre-built options in HTML, but this syncs Admin
+        document.getElementById("runMatch").innerHTML = document.getElementById("matchSelect").innerHTML;
     });
 }
 
-function loadPlayers() {
-    let m = matchSelect.value;
-    if(!m) return;
-    p1.innerHTML = ""; p2.innerHTML = "";
-    db.ref("Players/"+m+"/team1").once("value", s => s.forEach(d => p1.innerHTML += `<option>${d.val()}</option>`));
-    db.ref("Players/"+m+"/team2").once("value", s => s.forEach(d => p2.innerHTML += `<option>${d.val()}</option>`));
-    playerSelection.classList.remove("hidden");
-    joinedSection.classList.remove("hidden");
+function checkMatchStatus() {
+    let sel = document.getElementById("matchSelect");
+    let matchId = sel.value;
+    if(!matchId) return;
+    let matchDate = sel.options[sel.selectedIndex].getAttribute("data-date");
+    let today = new Date().toISOString().split('T')[0];
+    let lang = langSelect.value;
+
+    let area = document.getElementById("activeMatchArea");
+    let msg = document.getElementById("statusMsg");
+
+    if(matchDate === today) {
+        area.classList.remove("hidden");
+        msg.classList.add("hidden");
+        loadPlayers(matchId);
+    } else {
+        area.classList.add("hidden");
+        msg.classList.remove("hidden");
+        msg.innerText = (matchDate > today) ? langData[lang].msgSoon + " ("+matchDate+")" : langData[lang].msgEnd;
+        loadJoined(matchId);
+    }
+}
+
+function loadPlayers(m) {
+    db.ref("Players/"+m+"/team1").once("value", s => {
+        let opt = ""; s.forEach(d => opt += `<option>${d.val()}</option>`);
+        document.getElementById("p1").innerHTML = opt || "<option>Team 1</option>";
+    });
+    db.ref("Players/"+m+"/team2").once("value", s => {
+        let opt = ""; s.forEach(d => opt += `<option>${d.val()}</option>`);
+        document.getElementById("p2").innerHTML = opt || "<option>Team 2</option>";
+    });
     loadJoined(m);
 }
 
 function joinMatch() {
-    let m = matchSelect.value;
-    let pair = p1.value + " & " + p2.value;
-    db.ref("Selections/"+m+"/"+currentUser).once("value", s => {
-        if(s.exists()) return alert("Already joined!");
+    let m = document.getElementById("matchSelect").value;
+    let pair = document.getElementById("p1").value + " & " + document.getElementById("p2").value;
+    db.ref("Selections/"+m).once("value", snap => {
+        let count = 0;
+        snap.forEach(c => { if(c.val().user === currentUser) count++; });
+        if(count >= 5) return alert("Limit 5!");
         db.ref("Users/"+currentUser+"/coins").once("value", c => {
-            if(c.val() < 200) return alert("Low coins!");
+            if(c.val() < 200) return alert("No Coins!");
             db.ref("Users/"+currentUser+"/coins").set(c.val() - 200);
-            db.ref("Selections/"+m+"/"+currentUser).set(pair);
-            msg.innerText = "Joined! ✅";
+            db.ref("Selections/"+m).push({user: currentUser, pair: pair});
+            alert("Success!");
         });
     });
 }
 
-// 🔥 FIX: Jodi repeat hou naye mhanun innerHTML clear kela aahe
 function loadJoined(m) {
     db.ref("Selections/"+m).on("value", snap => {
-        db.ref("LiveScore/"+m).on("value", scSnap => {
-            let scores = scSnap.val() || {};
-            joinList.innerHTML = ""; // Clear existing list
-            if(!snap.exists()) return;
-
+        db.ref("LiveScore/"+m).on("value", sc => {
+            let scores = sc.val() || {};
+            let list = document.getElementById("joinList");
+            list.innerHTML = "";
             snap.forEach(u => {
-                let pair = u.val();
-                let pArr = pair.split(" & ");
-                let r1 = scores[pArr[0]] || 0;
-                let r2 = scores[pArr[1]] || 0;
-                joinList.innerHTML += `
-                    <div class="joined-item d-flex justify-content-between align-items-center">
-                        <div><b>${u.key}</b><br><small>${pair}</small></div>
-                        <div class="text-end">
-                            <span class="score-badge">${r1}+${r2}</span><br>
-                            <b>Total: ${r1+r2}</b>
-                        </div>
-                    </div>`;
+                let d = u.val();
+                let pArr = d.pair.split(" & ");
+                let r1 = scores[pArr[0]] || 0; let r2 = scores[pArr[1]] || 0;
+                list.innerHTML += `<div class="score-item"><div><b>${d.user}</b><br><small>${d.pair}</small></div><div class="text-end text-danger fw-bold">${r1}+${r2}<br><span class="text-dark">Total: ${r1+r2}</span></div></div>`;
             });
         });
     });
 }
 
-// ADMIN FUNCTIONS
-function loadAdminPlayers() {
-    let m = runMatch.value;
-    runPlayer.innerHTML = "";
-    db.ref("Players/"+m).once("value", snap => {
-        snap.forEach(t => t.forEach(p => runPlayer.innerHTML += `<option>${p.val()}</option>`));
-    });
-}
-
-function updateRuns() {
-    let m = runMatch.value;
-    let p = runPlayer.value;
-    let r = parseInt(newRuns.value);
-    if(!m || isNaN(r)) return;
-    db.ref("LiveScore/"+m+"/"+p).set(r).then(() => {
-        alert("Updated!");
-        newRuns.value = "";
-    });
-}
-
-function addPlayer() {
-    let m = admMatch.value.trim().replace(/\s+/g, '_');
-    let t = admTeam.value;
-    let p = admPlayer.value.trim();
-    if(!m || !p) return;
-    db.ref("Players/"+m+"/"+t).push(p).then(() => {
-        alert("Added!");
-        admPlayer.value = "";
-        loadMatches();
-    });
-}
-
+// Admin Panel functions stay in English for consistency
 function showAdmin() { homeSection.classList.add("hidden"); adminSection.classList.remove("hidden"); }
 function goHome() { adminSection.classList.add("hidden"); homeSection.classList.remove("hidden"); }
+function addPlayer() {
+    let m = runMatch.value; let t = admTeam.value; let p = admPlayer.value;
+    db.ref("Players/"+m+"/"+t).push(p).then(()=>alert("Added"));
+}
+function loadAdminPlayers() {
+    let m = runMatch.value; runPlayer.innerHTML = "";
+    db.ref("Players/"+m).once("value", s => s.forEach(t => t.forEach(p => runPlayer.innerHTML += `<option>${p.val()}</option>`)));
+}
+function updateRuns() {
+    let m = runMatch.value; let p = runPlayer.value; let r = parseInt(newRuns.value);
+    db.ref("LiveScore/"+m+"/"+p).set(r).then(()=>alert("Updated"));
+}
 </script>
 </body>
 </html>
