@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jodi11 IPL - Stay Logged In</title>
+    <title>Jodi11 IPL - Dynamic Teams</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -12,89 +12,97 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <style>
-        :root { --primary: #1a237e; --secondary: #ffab00; --bg: #f0f2f5; }
+        :root { --primary: #1a237e; --secondary: #ffab00; --bg: #f8f9fa; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg); }
-        .navbar { background: linear-gradient(135deg, #1a237e, #0d47a1); color: white; padding: 15px; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; position: sticky; top: 0; z-index: 1000; }
-        .card { border: none; border-radius: 20px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .coin-card { background: linear-gradient(135deg, #ffca28, #ff8f00); color: white; padding: 10px; border-radius: 15px; text-align: center; }
+        .navbar { background: linear-gradient(135deg, #1a237e, #0d47a1); color: white; padding: 15px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .hidden { display: none !important; }
-        .score-item { background: #fff; border-radius: 15px; padding: 12px; margin-bottom: 10px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        .btn-join { background: #2e7d32; color: white; border-radius: 12px; width: 100%; font-weight: 600; border: none; padding: 12px; }
+        .btn-join { background: #2e7d32; color: white; border-radius: 10px; width: 100%; font-weight: 600; border: none; padding: 10px; }
+        .team-label { font-size: 0.8rem; font-weight: bold; color: var(--primary); margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
 
-<div class="navbar">
+<div class="navbar text-center">
     <h4 class="m-0 fw-bold">🏏 JODI11 PRO</h4>
-    <div style="position: absolute; right: 15px; top: 12px;">
-        <select id="langSelect" class="form-select form-select-sm" onchange="changeLanguage()">
-            <option value="mr">मराठी</option>
-            <option value="en">English</option>
-        </select>
-    </div>
 </div>
 
 <div class="container mt-3">
 
     <div id="loginSection" class="card p-4 mx-auto" style="max-width: 400px;">
-        <h5 class="text-center fw-bold mb-4" data-key="loginTitle">लॉगिन करा</h5>
+        <h5 class="text-center fw-bold mb-3">Login</h5>
         <input id="username" class="form-control mb-2" placeholder="Username">
         <input id="password" type="password" class="form-control mb-3" placeholder="Password">
-        <button onclick="login()" class="btn btn-primary w-100 fw-bold" data-key="loginBtn">LOGIN</button>
-        <button onclick="signup()" class="btn btn-link w-100 mt-2 small" data-key="signupBtn">Signup</button>
+        <button onclick="login()" class="btn btn-primary w-100 fw-bold">LOGIN</button>
+        <button onclick="signup()" class="btn btn-link w-100 mt-2 small">New User? Signup</button>
     </div>
 
     <div id="homeSection" class="hidden">
         <div class="row g-2 mb-3">
-            <div class="col-6"><div class="card p-2 text-center text-truncate">👤 <b id="displayUser">--</b></div></div>
-            <div class="col-6"><div class="coin-card"><small data-key="coins">Coins</small><br><h5 class="m-0">💰 <span id="displayCoins">0</span></h5></div></div>
+            <div class="col-6"><div class="card p-2 text-center">👤 <b id="displayUser">--</b></div></div>
+            <div class="col-6"><div class="card p-2 text-center">💰 <b><span id="displayCoins">0</span></b></div></div>
         </div>
 
-        <div class="card p-3 shadow-sm">
-            <label class="small fw-bold mb-1" data-key="selectMatch">Select Match</label>
+        <div class="card p-3">
+            <label class="small fw-bold mb-2">आजची मॅच निवडा (Select Match)</label>
             <select id="matchSelect" class="form-select mb-3" onchange="checkMatchStatus()">
-                <option value="" data-key="optMatch">-- Choose --</option>
-                <option value="MI_vs_CSK" data-date="2026-04-23">MI vs CSK (23 April)</option>
-                <option value="RCB_vs_KKR" data-date="2026-04-24">RCB vs KKR (24 April)</option>
+                <option value="">-- Choose Match --</option>
+                <option value="MI_vs_CSK" data-date="2026-04-23" data-t1="MI" data-t2="CSK">MI vs CSK (23 April)</option>
+                <option value="RCB_vs_KKR" data-date="2026-04-24" data-t1="RCB" data-t2="KKR">RCB vs KKR (24 April)</option>
+                <option value="GT_vs_PBKS" data-date="2026-04-25" data-t1="GT" data-t2="PBKS">GT vs PBKS (25 April)</option>
             </select>
 
             <div id="activeMatchArea" class="hidden">
                 <div class="row g-2 mb-3">
-                    <div class="col-6"><select id="p1" class="form-select"></select></div>
-                    <div class="col-6"><select id="p2" class="form-select"></select></div>
+                    <div class="col-6">
+                        <span id="labelT1" class="team-label text-truncate text-uppercase">Team 1</span>
+                        <select id="p1" class="form-select"></select>
+                    </div>
+                    <div class="col-6">
+                        <span id="labelT2" class="team-label text-truncate text-uppercase">Team 2</span>
+                        <select id="p2" class="form-select"></select>
+                    </div>
                 </div>
-                <button onclick="joinMatch()" class="btn btn-join shadow-sm" data-key="joinBtn">JOIN (200 Coins)</button>
+                <button onclick="joinMatch()" class="btn btn-join shadow-sm">JOIN JODI (200 Coins)</button>
             </div>
             <div id="statusMsg" class="alert alert-warning text-center small fw-bold hidden mt-2"></div>
         </div>
 
         <div id="scoreArea" class="mt-4">
-            <h6 class="fw-bold mb-3" data-key="scoreTitle">📊 Live Scoreboard</h6>
+            <h6 class="fw-bold mb-3">📊 Live Scoreboard</h6>
             <div id="joinList"></div>
         </div>
 
         <div class="d-grid gap-2 mt-4 pb-5">
             <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark hidden">⚙️ ADMIN PANEL</button>
-            <button onclick="logout()" class="btn btn-outline-danger btn-sm" data-key="logout">LOGOUT</button>
+            <button onclick="logout()" class="btn btn-outline-danger btn-sm">LOGOUT</button>
         </div>
     </div>
 
     <div id="adminSection" class="card p-4 hidden">
-        <h6 class="fw-bold text-danger">Admin Panel</h6>
-        <select id="runMatch" class="form-select mb-2" onchange="loadAdminPlayers()"></select>
-        <select id="admTeam" class="form-select mb-2"><option value="team1">Team 1</option><option value="team2">Team 2</option></select>
-        <input id="admPlayer" class="form-control mb-2" placeholder="Player Name">
-        <button onclick="addPlayer()" class="btn btn-primary btn-sm w-100 mb-3">Add Player</button>
-        <hr>
-        <select id="runPlayer" class="form-select mb-2"></select>
-        <input id="newRuns" type="number" class="form-control mb-2" placeholder="Runs">
-        <button onclick="updateRuns()" class="btn btn-warning btn-sm w-100">Update Score</button>
-        <button onclick="goHome()" class="btn btn-link w-100">Back</button>
+        <h6 class="fw-bold text-danger mb-3">Admin Panel</h6>
+        <div class="bg-light p-2 border rounded mb-3">
+            <label class="small fw-bold">Add Player</label>
+            <select id="runMatch" class="form-select mb-2" onchange="syncAdminLabels()"></select>
+            <select id="admTeam" class="form-select mb-2">
+                <option value="team1" id="admT1Label">Team 1</option>
+                <option value="team2" id="admT2Label">Team 2</option>
+            </select>
+            <input id="admPlayer" class="form-control mb-2" placeholder="Player Name">
+            <button onclick="addPlayer()" class="btn btn-primary btn-sm w-100">Save Player</button>
+        </div>
+        
+        <div class="bg-light p-2 border rounded">
+            <label class="small fw-bold">Live Run Update</label>
+            <select id="runPlayer" class="form-select mb-2"></select>
+            <input id="newRuns" type="number" class="form-control mb-2" placeholder="Runs">
+            <button onclick="updateRuns()" class="btn btn-warning btn-sm w-100">Update Score</button>
+        </div>
+        <button onclick="goHome()" class="btn btn-link w-100 mt-2">Back</button>
     </div>
 </div>
 
 <script>
-// --- FIREBASE CONFIG ---
 const firebaseConfig = { apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs", databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -102,17 +110,10 @@ const db = firebase.database();
 let currentUser = "";
 const ADMINS = ["admin", "santoshbagul"];
 
-const langData = {
-    mr: { loginTitle: "लॉगिन करा", loginBtn: "लॉगिन", signupBtn: "नवीन खाते", coins: "कॉइन्स", selectMatch: "मॅच निवडा", optMatch: "-- निवडा --", joinBtn: "जोडी लावा (200)", scoreTitle: "📊 लाईव्ह स्कोअरबोर्ड", logout: "लॉगआउट", msgSoon: "🔒 लवकरच", msgEnd: "⌛ संपली" },
-    en: { loginTitle: "Login", loginBtn: "LOGIN", signupBtn: "Signup", coins: "Coins", selectMatch: "Select Match", optMatch: "-- Choose --", joinBtn: "Join (200)", scoreTitle: "📊 Live Scoreboard", logout: "LOGOUT", msgSoon: "🔒 Coming Soon", msgEnd: "⌛ Finished" }
-};
-
-// --- CHECK SESSION ON LOAD ---
+// --- SESSION CHECK ---
 window.onload = function() {
     let savedUser = localStorage.getItem("jodiUser");
-    if (savedUser) {
-        startSession(savedUser);
-    }
+    if (savedUser) startSession(savedUser);
 };
 
 function startSession(u) {
@@ -120,17 +121,9 @@ function startSession(u) {
     loginSection.classList.add("hidden");
     homeSection.classList.remove("hidden");
     displayUser.innerText = u;
-    
-    // Coin Update
-    db.ref("Users/"+u+"/coins").on("value", sn => {
-        displayCoins.innerText = sn.val() || 0;
-    });
-
+    db.ref("Users/"+u+"/coins").on("value", sn => displayCoins.innerText = sn.val() || 0);
     if(ADMINS.includes(u)) adminBtn.classList.remove("hidden");
-    
-    // Sync Matches
     document.getElementById("runMatch").innerHTML = document.getElementById("matchSelect").innerHTML;
-    changeLanguage();
 }
 
 function login() {
@@ -138,31 +131,29 @@ function login() {
     let p = password.value.trim();
     db.ref("Users/"+u).once("value", s => {
         if(!s.exists() || s.val().password !== p) return alert("Wrong Credentials!");
-        localStorage.setItem("jodiUser", u); // SESSION SAVE KELA
+        localStorage.setItem("jodiUser", u);
         startSession(u);
     });
 }
 
-function logout() {
-    localStorage.removeItem("jodiUser");
-    location.reload();
-}
+function logout() { localStorage.removeItem("jodiUser"); location.reload(); }
 
-function changeLanguage() {
-    let lang = langSelect.value;
-    document.querySelectorAll("[data-key]").forEach(el => {
-        let key = el.getAttribute("data-key");
-        if (langData[lang][key]) el.innerText = langData[lang][key];
-    });
-}
-
+// --- DYNAMIC MATCH STATUS & LABELS ---
 function checkMatchStatus() {
     let sel = matchSelect;
     let matchId = sel.value;
     if(!matchId) return;
+
+    // Get team names from data attributes
+    let t1Name = sel.options[sel.selectedIndex].getAttribute("data-t1");
+    let t2Name = sel.options[sel.selectedIndex].getAttribute("data-t2");
     let matchDate = sel.options[sel.selectedIndex].getAttribute("data-date");
     let today = new Date().toISOString().split('T')[0];
-    
+
+    // Update UI Labels
+    labelT1.innerText = t1Name;
+    labelT2.innerText = t2Name;
+
     if(matchDate === today) {
         activeMatchArea.classList.remove("hidden");
         statusMsg.classList.add("hidden");
@@ -170,19 +161,28 @@ function checkMatchStatus() {
     } else {
         activeMatchArea.classList.add("hidden");
         statusMsg.classList.remove("hidden");
-        statusMsg.innerText = (matchDate > today) ? langData[langSelect.value].msgSoon : langData[langSelect.value].msgEnd;
+        statusMsg.innerText = (matchDate > today) ? "🔒 Coming Soon ("+matchDate+")" : "⌛ Finished";
         loadJoined(matchId);
     }
+}
+
+function syncAdminLabels() {
+    let sel = runMatch;
+    let t1Name = sel.options[sel.selectedIndex].getAttribute("data-t1");
+    let t2Name = sel.options[sel.selectedIndex].getAttribute("data-t2");
+    document.getElementById("admT1Label").innerText = t1Name || "Team 1";
+    document.getElementById("admT2Label").innerText = t2Name || "Team 2";
+    loadAdminPlayers();
 }
 
 function loadPlayers(m) {
     db.ref("Players/"+m+"/team1").once("value", s => {
         let opt = ""; s.forEach(d => opt += `<option>${d.val()}</option>`);
-        p1.innerHTML = opt || "<option>Team 1</option>";
+        p1.innerHTML = opt || "<option>No Players</option>";
     });
     db.ref("Players/"+m+"/team2").once("value", s => {
         let opt = ""; s.forEach(d => opt += `<option>${d.val()}</option>`);
-        p2.innerHTML = opt || "<option>Team 2</option>";
+        p2.innerHTML = opt || "<option>No Players</option>";
     });
     loadJoined(m);
 }
@@ -198,12 +198,11 @@ function joinMatch() {
             if(c.val() < 200) return alert("No Coins!");
             db.ref("Users/"+currentUser+"/coins").set(c.val() - 200);
             db.ref("Selections/"+m).push({user: currentUser, pair: pair});
-            alert("Joined!");
+            alert("Success!");
         });
     });
 }
 
-// REAL-TIME SCOREBOARD (Updates automatically when Firebase changes)
 function loadJoined(m) {
     db.ref("Selections/"+m).on("value", snap => {
         db.ref("LiveScore/"+m).on("value", sc => {
@@ -213,14 +212,7 @@ function loadJoined(m) {
                 let d = u.val();
                 let pArr = d.pair.split(" & ");
                 let r1 = scores[pArr[0]] || 0; let r2 = scores[pArr[1]] || 0;
-                joinList.innerHTML += `
-                    <div class="score-item">
-                        <div><b>${d.user}</b><br><small>${d.pair}</small></div>
-                        <div class="text-end">
-                            <span class="badge bg-danger">${r1}+${r2}</span><br>
-                            <span class="fw-bold">Total: ${r1+r2}</span>
-                        </div>
-                    </div>`;
+                joinList.innerHTML += `<div class="score-item" style="background:#fff; border-radius:10px; padding:10px; margin-bottom:5px; display:flex; justify-content:space-between; border:1px solid #ddd;"><div><b>${d.user}</b><br><small>${d.pair}</small></div><div class="text-end text-danger fw-bold">${r1}+${r2}<br><span class="text-dark">Total: ${r1+r2}</span></div></div>`;
             });
         });
     });
@@ -237,14 +229,13 @@ function loadAdminPlayers() {
     db.ref("Players/"+m).once("value", s => s.forEach(t => t.forEach(p => runPlayer.innerHTML += `<option>${p.val()}</option>`)));
 }
 function updateRuns() {
-    let r = parseInt(newRuns.value);
-    db.ref("LiveScore/"+runMatch.value+"/"+runPlayer.value).set(r).then(()=>alert("Updated"));
+    db.ref("LiveScore/"+runMatch.value+"/"+runPlayer.value).set(parseInt(newRuns.value)).then(()=>alert("Updated"));
 }
 function showAdmin() { homeSection.classList.add("hidden"); adminSection.classList.remove("hidden"); }
 function goHome() { adminSection.classList.add("hidden"); homeSection.classList.remove("hidden"); }
 function signup() {
     let u = username.value.toLowerCase().trim(); let p = password.value.trim();
-    db.ref("Users/"+u).set({password:p, coins:2000}).then(()=>alert("Signup Done!"));
+    db.ref("Users/"+u).set({password:p, coins:2000}).then(()=>alert("Done!"));
 }
 </script>
 </body>
