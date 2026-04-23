@@ -3,23 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jodi11 IPL - Secure Admin</title>
-    
+    <title>Jodi11 IPL Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
     <style>
-        body { background-color: #f4f7f9; font-family: 'Segoe UI', Arial, sans-serif; }
-        .navbar { background: #0d47a1; color: white; padding: 15px; text-align: center; font-weight: bold; border-bottom: 4px solid #ffab00; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .card { border-radius: 15px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 15px; }
-        .btn-primary { background: #0d47a1; border: none; font-weight: 600; }
-        .coin-box { background: #ffd600; color: #000; font-weight: bold; padding: 8px 15px; border-radius: 20px; text-align: center; display: inline-block; }
+        body { background: #f0f2f5; font-family: sans-serif; }
+        .navbar { background: #1a237e; color: white; padding: 12px; text-align: center; font-weight: bold; }
+        .card { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
         .hidden { display: none !important; }
-        .joined-item { background: white; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 6px solid #0d47a1; transition: 0.3s; }
-        .score-badge { background: #ef5350; color: white; padding: 2px 8px; border-radius: 5px; font-weight: bold; font-size: 0.85rem; }
-        .total-badge { background: #43a047; color: white; padding: 2px 8px; border-radius: 5px; font-weight: bold; }
-        .admin-section-box { background: #fff3e0; border: 1px solid #ffe0b2; padding: 15px; border-radius: 10px; margin-top: 10px; }
+        .joined-item { background: white; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 5px solid #1a237e; }
+        .score-badge { background: #ff5722; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -27,82 +21,61 @@
 <div class="navbar">🏏 JODI11 IPL PRO</div>
 
 <div class="container mt-3">
-
     <div id="loginSection" class="card p-4 mx-auto" style="max-width: 400px;">
-        <h5 class="text-center mb-4">Account Login</h5>
         <input id="username" class="form-control mb-2" placeholder="Username">
         <input id="password" type="password" class="form-control mb-3" placeholder="Password">
-        <div class="d-grid gap-2">
-            <button onclick="login()" class="btn btn-primary">Login</button>
-            <button onclick="signup()" class="btn btn-outline-secondary btn-sm">New User? Signup</button>
-        </div>
+        <button onclick="login()" class="btn btn-primary w-100">Login</button>
+        <button onclick="signup()" class="btn btn-link w-100 btn-sm">Create Account</button>
     </div>
 
     <div id="homeSection" class="hidden">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>👤 <b id="displayUser" class="text-primary"></b></div>
-            <div class="coin-box">💰 <span id="displayCoins">0</span></div>
+        <div class="d-flex justify-content-between mb-3">
+            <b>👤 <span id="displayUser"></span></b>
+            <b class="text-success">💰 <span id="displayCoins">0</span></b>
         </div>
 
         <div class="card p-3">
-            <label class="fw-bold mb-2">Select Match:</label>
+            <label class="small fw-bold">Select Match</label>
             <select id="matchSelect" class="form-select mb-3" onchange="loadPlayers()"></select>
-
-            <div id="playerSelection" class="hidden text-center">
-                <div class="row g-2 mb-3">
-                    <div class="col-6"><label class="small text-muted">Team 1 Player</label><select id="p1" class="form-select"></select></div>
-                    <div class="col-6"><label class="small text-muted">Team 2 Player</label><select id="p2" class="form-select"></select></div>
+            
+            <div id="playerSelection" class="hidden">
+                <div class="row g-2">
+                    <div class="col-6"><select id="p1" class="form-select"></select></div>
+                    <div class="col-6"><select id="p2" class="form-select"></select></div>
                 </div>
-                <button onclick="joinMatch()" class="btn btn-success w-100">Apply Jodi (200 Coins)</button>
-                <p id="msg" class="mt-2 small fw-bold"></p>
+                <button onclick="joinMatch()" class="btn btn-success w-100 mt-3">Join Contest (200)</button>
+                <p id="msg" class="text-center mt-2 small"></p>
             </div>
         </div>
 
-        <div id="joinedSection" class="hidden mt-4">
-            <h6 class="fw-bold text-uppercase small text-muted mb-2">Live Jodi Scoreboard</h6>
+        <div id="joinedSection" class="hidden">
+            <h6 class="fw-bold">📊 Real-time Scoreboard</h6>
             <div id="joinList"></div>
         </div>
 
-        <div class="d-grid gap-2 mt-4">
-            <button onclick="showLeaderboard()" class="btn btn-info text-white">🏆 Leaderboard</button>
-            <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark hidden">⚙️ Admin Panel</button>
-            <button onclick="location.reload()" class="btn btn-light btn-sm mt-3 border">Logout</button>
-        </div>
+        <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark w-100 mt-3 hidden">⚙️ Admin Panel</button>
+        <button onclick="location.reload()" class="btn btn-light w-100 mt-2 btn-sm">Logout</button>
     </div>
 
     <div id="adminSection" class="card p-4 hidden">
-        <div class="d-flex justify-content-between">
-            <h5 class="text-danger fw-bold">Admin Only Access</h5>
-            <button onclick="goHome()" class="btn-close"></button>
-        </div>
-        
-        <div class="admin-section-box mb-3">
-            <label class="fw-bold small">Add Player to Match</label>
+        <h6>⚙️ Admin Control</h6>
+        <div class="border p-2 mb-3 rounded">
             <input id="admMatch" class="form-control form-control-sm mb-2" placeholder="Match (e.g. MI_CSK)">
             <select id="admTeam" class="form-select form-select-sm mb-2"><option value="team1">Team 1</option><option value="team2">Team 2</option></select>
             <input id="admPlayer" class="form-control form-control-sm mb-2" placeholder="Player Name">
-            <button onclick="addPlayer()" class="btn btn-danger btn-sm w-100">Save Player</button>
+            <button onclick="addPlayer()" class="btn btn-danger btn-sm w-100">Add Player</button>
         </div>
-
-        <div class="admin-section-box bg-light">
-            <label class="fw-bold small text-primary">Live Run Update</label>
+        <div class="border p-2 bg-light rounded">
             <select id="runMatch" class="form-select form-select-sm mb-2" onchange="loadAdminPlayers()"></select>
             <select id="runPlayer" class="form-select form-select-sm mb-2"></select>
-            <input id="newRuns" type="number" class="form-control form-control-sm mb-2" placeholder="Enter Total Runs">
+            <input id="newRuns" type="number" class="form-control form-control-sm mb-2" placeholder="Total Runs">
             <button onclick="updateRuns()" class="btn btn-primary btn-sm w-100">Update Score</button>
         </div>
+        <button onclick="goHome()" class="btn btn-link w-100">Back</button>
     </div>
-
-    <div id="leaderSection" class="card p-4 hidden">
-        <h5 class="text-center mb-3">🏆 Top Rankings</h5>
-        <div id="leaderList"></div>
-        <button onclick="goHome()" class="btn btn-primary w-100 mt-3">Back to App</button>
-    </div>
-
 </div>
 
 <script>
-// --- FIREBASE CONFIG ---
 const firebaseConfig = {
     apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs",
     databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com"
@@ -111,140 +84,86 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let currentUser = "";
-const ADMIN_LIST = ["admin", "santoshbagul"]; // He IDs Admin asnar
-
-// --- AUTH FUNCTIONS ---
+const ADMINS = ["admin", "santoshbagul"];
 
 function signup() {
-    let u = document.getElementById("username").value.toLowerCase().trim();
-    let p = document.getElementById("password").value.trim();
-    if(u.length < 3) return alert("Username khup lahan aahe");
-    db.ref("Users/" + u).once("value", s => {
-        if(s.exists()) return alert("User pahilech aahe!");
-        db.ref("Users/" + u).set({ password: p, coins: 2000 }).then(() => alert("Signup Successful!"));
+    let u = username.value.toLowerCase().trim();
+    let p = password.value.trim();
+    if(!u || !p) return;
+    db.ref("Users/"+u).once("value", s => {
+        if(s.exists()) return alert("User exists!");
+        db.ref("Users/"+u).set({password:p, coins:2000}).then(()=>alert("Signup OK!"));
     });
 }
 
 function login() {
-    let u = document.getElementById("username").value.toLowerCase().trim();
-    let p = document.getElementById("password").value.trim();
-    db.ref("Users/" + u).once("value", s => {
-        if(!s.exists() || s.val().password !== p) return alert("Wrong Credentials!");
-        
+    let u = username.value.toLowerCase().trim();
+    let p = password.value.trim();
+    db.ref("Users/"+u).once("value", s => {
+        if(!s.exists() || s.val().password !== p) return alert("Wrong!");
         currentUser = u;
-        document.getElementById("loginSection").classList.add("hidden");
-        document.getElementById("homeSection").classList.remove("hidden");
-        document.getElementById("displayUser").innerText = u.toUpperCase();
-        
-        // Real-time Coin Update
-        db.ref("Users/" + u + "/coins").on("value", sn => document.getElementById("displayCoins").innerText = sn.val());
-        
-        // --- STRICT ADMIN CHECK ---
-        if(ADMIN_LIST.includes(u)) {
-            document.getElementById("adminBtn").classList.remove("hidden");
-        }
-        
+        loginSection.classList.add("hidden");
+        homeSection.classList.remove("hidden");
+        displayUser.innerText = u;
+        db.ref("Users/"+u+"/coins").on("value", sn => displayCoins.innerText = sn.val());
+        if(ADMINS.includes(u)) adminBtn.classList.remove("hidden");
         loadMatches();
     });
 }
 
-// --- APP LOGIC ---
-
 function loadMatches() {
-    const selects = [document.getElementById("matchSelect"), document.getElementById("runMatch")];
     db.ref("Players").once("value", snap => {
-        let options = "<option value=''>-- Active Matches --</option>";
-        snap.forEach(m => options += `<option value="${m.key}">${m.key}</option>`);
-        selects.forEach(s => s.innerHTML = options);
+        let opt = "<option value=''>-- Select Match --</option>";
+        snap.forEach(m => opt += `<option value="${m.key}">${m.key}</option>`);
+        matchSelect.innerHTML = opt;
+        runMatch.innerHTML = opt;
     });
 }
 
-// --- YAA FUNCTIONS LA REPLACE KARA ---
-
-// 1. Players Load karnyache Fixed Function
 function loadPlayers() {
-    let m = document.getElementById("matchSelect").value;
+    let m = matchSelect.value;
     if(!m) return;
-    
-    let p1 = document.getElementById("p1"), p2 = document.getElementById("p2");
-    p1.innerHTML = "<option>Loading...</option>"; 
-    p2.innerHTML = "<option>Loading...</option>";
-
-    // .on vaparlyamule real-time refresh hoil
-    db.ref("Players/" + m + "/team1").on("value", s => {
-        p1.innerHTML = ""; // Clear Loading
-        if(!s.exists()) { p1.innerHTML = "<option>No Players</option>"; }
-        s.forEach(d => {
-            p1.innerHTML += `<option value="${d.val()}">${d.val()}</option>`;
-        });
-    });
-
-    db.ref("Players/" + m + "/team2").on("value", s => {
-        p2.innerHTML = ""; // Clear Loading
-        if(!s.exists()) { p2.innerHTML = "<option>No Players</option>"; }
-        s.forEach(d => {
-            p2.innerHTML += `<option value="${d.val()}">${d.val()}</option>`;
-        });
-    });
-
-    document.getElementById("playerSelection").classList.remove("hidden");
-    document.getElementById("joinedSection").classList.remove("hidden");
+    p1.innerHTML = ""; p2.innerHTML = "";
+    db.ref("Players/"+m+"/team1").once("value", s => s.forEach(d => p1.innerHTML += `<option>${d.val()}</option>`));
+    db.ref("Players/"+m+"/team2").once("value", s => s.forEach(d => p2.innerHTML += `<option>${d.val()}</option>`));
+    playerSelection.classList.remove("hidden");
+    joinedSection.classList.remove("hidden");
     loadJoined(m);
 }
 
-// 2. Player Add karnyache Fixed Function (Admin)
-function addPlayer() {
-    let m = document.getElementById("admMatch").value.trim().replace(/\s+/g, '_');
-    let t = document.getElementById("admTeam").value; // team1 ki team2
-    let p = document.getElementById("admPlayer").value.trim();
-    
-    if(!m || !p) return alert("Match name aani Player name taka!");
-
-    // Navin player push karne
-    db.ref("Players/" + m + "/" + t).push(p).then(() => {
-        alert(p + " Added to " + t);
-        document.getElementById("admPlayer").value = ""; // Input clear kara
-        loadMatches(); // Dropdown refresh kara
-    }).catch(err => alert("Error: " + err));
-}
-
-
 function joinMatch() {
-    let m = document.getElementById("matchSelect").value;
-    let pair = document.getElementById("p1").value + " & " + document.getElementById("p2").value;
-    db.ref("Selections/" + m + "/" + currentUser).once("value", s => {
-        if(s.exists()) return alert("Match pahilech join keli aahe!");
-        db.ref("Users/" + currentUser + "/coins").once("value", cSnap => {
-            if(cSnap.val() < 200) return alert("Coins sampale!");
-            db.ref("Users/" + currentUser + "/coins").set(cSnap.val() - 200);
-            db.ref("Selections/" + m + "/" + currentUser).set(pair);
-            document.getElementById("msg").innerText = "SUCCESS: Jodi Applied! ✅";
-            document.getElementById("msg").style.color = "green";
+    let m = matchSelect.value;
+    let pair = p1.value + " & " + p2.value;
+    db.ref("Selections/"+m+"/"+currentUser).once("value", s => {
+        if(s.exists()) return alert("Already joined!");
+        db.ref("Users/"+currentUser+"/coins").once("value", c => {
+            if(c.val() < 200) return alert("Low coins!");
+            db.ref("Users/"+currentUser+"/coins").set(c.val() - 200);
+            db.ref("Selections/"+m+"/"+currentUser).set(pair);
+            msg.innerText = "Joined! ✅";
         });
     });
 }
 
+// 🔥 FIX: Jodi repeat hou naye mhanun innerHTML clear kela aahe
 function loadJoined(m) {
-    db.ref("Selections/" + m).on("value", snap => {
-        db.ref("LiveScore/" + m).on("value", scoreSnap => {
-            let scores = scoreSnap.val() || {};
-            let list = document.getElementById("joinList");
-            list.innerHTML = "";
-            if(!snap.exists()) return list.innerHTML = "<small class='text-muted'>No entries yet.</small>";
+    db.ref("Selections/"+m).on("value", snap => {
+        db.ref("LiveScore/"+m).on("value", scSnap => {
+            let scores = scSnap.val() || {};
+            joinList.innerHTML = ""; // Clear existing list
+            if(!snap.exists()) return;
 
             snap.forEach(u => {
                 let pair = u.val();
                 let pArr = pair.split(" & ");
                 let r1 = scores[pArr[0]] || 0;
                 let r2 = scores[pArr[1]] || 0;
-                let total = r1 + r2;
-
-                list.innerHTML += `
+                joinList.innerHTML += `
                     <div class="joined-item d-flex justify-content-between align-items-center">
-                        <div><b>${u.key}</b><br><span class="small text-muted">${pair}</span></div>
+                        <div><b>${u.key}</b><br><small>${pair}</small></div>
                         <div class="text-end">
-                            <span class="score-badge">${r1} + ${r2}</span><br>
-                            <span class="total-badge mt-1 d-inline-block">Total: ${total}</span>
+                            <span class="score-badge">${r1}+${r2}</span><br>
+                            <b>Total: ${r1+r2}</b>
                         </div>
                     </div>`;
             });
@@ -252,64 +171,40 @@ function loadJoined(m) {
     });
 }
 
-// --- ADMIN FUNCTIONS (SECURE) ---
-
-function showAdmin() {
-    if(!ADMIN_LIST.includes(currentUser)) return alert("Access Denied!");
-    document.getElementById("homeSection").classList.add("hidden");
-    document.getElementById("adminSection").classList.remove("hidden");
-}
-
+// ADMIN FUNCTIONS
 function loadAdminPlayers() {
-    let m = document.getElementById("runMatch").value;
-    let pSelect = document.getElementById("runPlayer");
-    pSelect.innerHTML = "";
-    db.ref("Players/" + m).once("value", snap => {
-        snap.forEach(team => team.forEach(p => pSelect.innerHTML += `<option value="${p.val()}">${p.val()}</option>`));
+    let m = runMatch.value;
+    runPlayer.innerHTML = "";
+    db.ref("Players/"+m).once("value", snap => {
+        snap.forEach(t => t.forEach(p => runPlayer.innerHTML += `<option>${p.val()}</option>`));
     });
 }
 
 function updateRuns() {
-    let m = document.getElementById("runMatch").value;
-    let pName = document.getElementById("runPlayer").value;
-    let runs = parseInt(document.getElementById("newRuns").value);
-    if(!m || isNaN(runs)) return alert("Full data enter kara!");
-    db.ref("LiveScore/" + m + "/" + pName).set(runs).then(() => {
-        alert("Score Updated!");
-        document.getElementById("newRuns").value = "";
+    let m = runMatch.value;
+    let p = runPlayer.value;
+    let r = parseInt(newRuns.value);
+    if(!m || isNaN(r)) return;
+    db.ref("LiveScore/"+m+"/"+p).set(r).then(() => {
+        alert("Updated!");
+        newRuns.value = "";
     });
 }
 
 function addPlayer() {
-    let m = document.getElementById("admMatch").value.trim().replace(/\s+/g, '_');
-    let t = document.getElementById("admTeam").value;
-    let p = document.getElementById("admPlayer").value.trim();
-    if(!m || !p) return alert("Data apurna aahe!");
-    db.ref("Players/" + m + "/" + t).push(p).then(() => {
-        alert("Player Added Successfully!");
-        document.getElementById("admPlayer").value = "";
+    let m = admMatch.value.trim().replace(/\s+/g, '_');
+    let t = admTeam.value;
+    let p = admPlayer.value.trim();
+    if(!m || !p) return;
+    db.ref("Players/"+m+"/"+t).push(p).then(() => {
+        alert("Added!");
+        admPlayer.value = "";
         loadMatches();
     });
 }
 
-function showLeaderboard() {
-    document.getElementById("homeSection").classList.add("hidden");
-    document.getElementById("leaderSection").classList.remove("hidden");
-    db.ref("Users").once("value", s => {
-        let arr = [];
-        s.forEach(d => arr.push({ n: d.key, c: d.val().coins }));
-        arr.sort((a,b) => b.c - a.c);
-        let html = "";
-        arr.forEach((x, i) => html += `<div class="p-2 border-bottom d-flex justify-content-between"><span>#${i+1} ${x.n}</span> <b class='text-success'>💰${x.c}</b></div>`);
-        document.getElementById("leaderList").innerHTML = html;
-    });
-}
-
-function goHome() {
-    document.getElementById("adminSection").classList.add("hidden");
-    document.getElementById("leaderSection").classList.add("hidden");
-    document.getElementById("homeSection").classList.remove("hidden");
-}
+function showAdmin() { homeSection.classList.add("hidden"); adminSection.classList.remove("hidden"); }
+function goHome() { adminSection.classList.add("hidden"); homeSection.classList.remove("hidden"); }
 </script>
 </body>
 </html>
