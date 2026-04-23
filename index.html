@@ -119,11 +119,16 @@ function signup() {
 function login() {
   let u = username.value;
   let p = password.value;
-
+  
+console.log("Username:", u);
+console.log("Password:", p);
+  
   db.ref("Users/" + u).once("value", snap => {
     if (!snap.exists()) return alert("User not exist ❌");
 
     let d = snap.val();
+     console.log("Firebase Data:", d);
+    
     if (d.password === p) {
       currentUser = u;
       showHome(d.coins);
