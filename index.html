@@ -5,47 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jodi11 IPL 2026</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #1a237e; --secondary: #ffab00; --bg: #f4f7f6; }
+        :root { --primary: #1a237e; --secondary: #ffab00; --bg: #f0f2f5; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg); }
-        .navbar { background: linear-gradient(135deg, #1a237e, #0d47a1); color: white; padding: 15px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
-        .card { border: none; border-radius: 18px; box-shadow: 0 5px 15px rgba(0,0,0,0.06); margin-bottom: 15px; }
+        .navbar { background: linear-gradient(135deg, #1a237e, #0d47a1); color: white; padding: 15px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 15px; overflow: hidden; }
+        .team-logo { width: 35px; height: 35px; object-fit: contain; margin-right: 8px; border-radius: 50%; background: #fff; padding: 2px; }
+        .my-jodi-card { background: #fff; border-left: 6px solid #43a047; }
+        .coin-badge { background: #fff3e0; color: #e65100; padding: 5px 12px; border-radius: 20px; font-weight: 700; border: 1px solid #ffcc80; }
+        .btn-join { background: linear-gradient(to right, #1b5e20, #43a047); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; transition: 0.3s; }
+        .btn-join:active { transform: scale(0.98); }
         .hidden { display: none !important; }
-        .btn-join { background: #2e7d32; color: white; border-radius: 12px; width: 100%; font-weight: 600; padding: 12px; border: none; }
-        .score-item { background: #fff; border-radius: 12px; padding: 10px; margin-bottom: 8px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; }
+        .score-row { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .score-row:last-child { border: none; }
+        .badge-total { background: #1a237e; color: white; padding: 4px 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
 <div class="navbar d-flex justify-content-between align-items-center px-3">
-    <h4 class="m-0 fw-bold">🏏 JODI11</h4>
-    <select id="langSelect" class="form-select form-select-sm w-auto" onchange="changeLanguage()">
-        <option value="mr">मराठी</option>
-        <option value="en">English</option>
-    </select>
+    <h4 class="m-0 fw-bold">🏏 JODI11 <span style="color:var(--secondary)">PRO</span></h4>
+    <div id="userInfo" class="hidden"><span class="coin-badge">💰 <span id="displayCoins">0</span></span></div>
 </div>
 
 <div class="container mt-3">
     <div id="loginSection" class="card p-4 mx-auto" style="max-width: 400px;">
-        <h5 class="text-center fw-bold mb-3" data-key="loginTitle">लॉगिन</h5>
-        <input id="username" class="form-control mb-2" placeholder="User Name">
-        <input id="password" type="password" class="form-control mb-3" placeholder="Password">
-        <button onclick="login()" class="btn btn-primary w-100 fw-bold">LOGIN</button>
-        <button onclick="signup()" class="btn btn-link w-100 mt-1 small" data-key="signupBtn">Sign Up</button>
+        <h5 class="text-center fw-bold mb-4">Login Account</h5>
+        <input id="username" class="form-control mb-2" placeholder="Username">
+        <input id="password" type="password" class="form-control mb-4" placeholder="Password">
+        <button onclick="login()" class="btn btn-primary w-100 fw-bold py-2">LOGIN</button>
+        <button onclick="signup()" class="btn btn-link w-100 mt-2 text-muted small">Signup New User</button>
     </div>
 
     <div id="homeSection" class="hidden">
-        <div class="row g-2 mb-3">
-            <div class="col-6"><div class="card p-2 text-center">👤 <b id="displayUser">--</b></div></div>
-            <div class="col-6"><div class="card p-2 text-center text-warning">💰 <b id="displayCoins">0</b></div></div>
-        </div>
-
-        <div class="card p-3">
-            <label class="small fw-bold mb-2" data-key="selectMatch">Select Match</label>
+        <div class="card p-3 mb-3 bg-white">
+            <label class="small fw-bold text-muted mb-2">Select Match</label>
             <select id="matchSelect" class="form-select mb-3" onchange="checkMatchStatus()">
-                <option value="">-- Choose --</option>
+                <option value="">-- Choose Match --</option>
                 <option value="MI_vs_CSK" data-date="2026-04-23" data-t1="MI" data-t2="CSK">MI vs CSK</option>
                 <option value="RCB_vs_KKR" data-date="2026-04-24" data-t1="RCB" data-t2="KKR">RCB vs KKR</option>
                 <option value="GT_vs_SRH" data-date="2026-04-25" data-t1="GT" data-t2="SRH">GT vs SRH</option>
@@ -54,31 +53,44 @@
 
             <div id="activeMatchArea" class="hidden">
                 <div class="row g-2 mb-3">
-                    <div class="col-6"><span id="labelT1" class="small fw-bold"></span><select id="p1" class="form-select"></select></div>
-                    <div class="col-6"><span id="labelT2" class="small fw-bold"></span><select id="p2" class="form-select"></select></div>
+                    <div class="col-6 text-center">
+                        <img id="imgT1" class="team-logo mb-1" src="">
+                        <div id="labelT1" class="small fw-bold mb-1"></div>
+                        <select id="p1" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-6 text-center">
+                        <img id="imgT2" class="team-logo mb-1" src="">
+                        <div id="labelT2" class="small fw-bold mb-1"></div>
+                        <select id="p2" class="form-select form-select-sm"></select>
+                    </div>
                 </div>
-                <button onclick="joinMatch()" class="btn btn-join shadow" data-key="joinBtn">JOIN CONTEST (200)</button>
+                <button onclick="joinMatch()" class="btn btn-join">JOIN JODI (200 Coins)</button>
             </div>
             <div id="statusMsg" class="alert alert-warning text-center small fw-bold hidden"></div>
         </div>
 
-        <div id="scoreArea" class="mt-3">
-            <h6 class="fw-bold mb-2" data-key="scoreTitle">📊 Scoreboard</h6>
-            <div id="joinList"></div>
+        <div id="mySection" class="hidden mb-4">
+            <h6 class="fw-bold text-success"><i class="bi bi-person-check"></i> माझी निवडलेली जोडी (My Choices)</h6>
+            <div id="myList"></div>
         </div>
 
-        <div class="d-grid gap-2 mt-4 pb-4">
-            <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark hidden">⚙️ ADMIN</button>
-            <button onclick="logout()" class="btn btn-outline-danger btn-sm" data-key="logout">LOGOUT</button>
+        <div id="scoreArea" class="mt-3">
+            <h6 class="fw-bold mb-3">📊 लाईव्ह स्कोअरबोर्ड (Global)</h6>
+            <div id="joinList" class="card p-2"></div>
+        </div>
+
+        <div class="d-grid gap-2 mt-4 pb-5">
+            <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark hidden">⚙️ ADMIN CONTROL</button>
+            <button onclick="logout()" class="btn btn-outline-danger btn-sm">LOGOUT</button>
         </div>
     </div>
 
     <div id="adminSection" class="card p-4 hidden">
         <h6 class="fw-bold text-danger mb-3">Admin Panel</h6>
-        <select id="runMatch" class="form-select mb-2" onchange="syncAdminLabels()"></select>
+        <select id="runMatch" class="form-select mb-2" onchange="loadAdminPlayers()"></select>
         <select id="admTeam" class="form-select mb-2"><option value="team1">Team 1</option><option value="team2">Team 2</option></select>
-        <input id="admPlayer" class="form-control mb-2" placeholder="New Player Name">
-        <button onclick="addPlayer()" class="btn btn-primary btn-sm w-100">Add Player</button>
+        <input id="admPlayer" class="form-control mb-2" placeholder="Player Name">
+        <button onclick="addPlayer()" class="btn btn-primary btn-sm w-100">Save Player</button>
         <hr>
         <select id="runPlayer" class="form-select mb-2"></select>
         <input id="newRuns" type="number" class="form-control mb-2" placeholder="Runs">
@@ -96,40 +108,27 @@ const db = firebase.database();
 let currentUser = "";
 const ADMINS = ["admin", "santoshbagul"];
 
-// --- IN-BUILD PLAYERS DATA ---
-const playersData = {
-    "MI": ["Rohit Sharma", "Hardik Pandya", "Suryakumar Yadav", "Ishan Kishan", "Jasprit Bumrah", "Tilak Varma", "Tim David"],
-    "CSK": ["MS Dhoni", "Ruturaj Gaikwad", "Ravindra Jadeja", "Shivam Dube", "Matheesha Pathirana", "Daryl Mitchell", "Rachin Ravindra"],
-    "RCB": ["Virat Kohli", "Faf du Plessis", "Glenn Maxwell", "Mohammed Siraj", "Rajat Patidar", "Cameron Green", "Dinesh Karthik"],
-    "KKR": ["Shreyas Iyer", "Sunil Narine", "Andre Russell", "Rinku Singh", "Mitchell Starc", "Venkatesh Iyer", "Varun Chakaravarthy"],
-    "GT": ["Shubman Gill", "Rashid Khan", "David Miller", "Sai Sudharsan", "Mohammed Shami", "Rahul Tewatia"],
-    "SRH": ["Pat Cummins", "Travis Head", "Abhishek Sharma", "Heinrich Klaasen", "Bhuvneshwar Kumar", "Aiden Markram"],
-    "RR": ["Sanju Samson", "Yashasvi Jaiswal", "Jos Buttler", "Yuzvendra Chahal", "Trent Boult", "Riyan Parag"],
-    "DC": ["Rishabh Pant", "David Warner", "Axar Patel", "Kuldeep Yadav", "Prithvi Shaw", "Mitchell Marsh"]
+// --- LOGOS & PLAYERS ---
+const teamInfo = {
+    "MI": { logo: "https://documents.iplt20.com/ipl/MI/Logos/Logo_Round/MI_Logo_Round.png", players: ["Rohit Sharma", "Hardik Pandya", "Suryakumar Yadav", "Jasprit Bumrah", "Ishan Kishan"] },
+    "CSK": { logo: "https://documents.iplt20.com/ipl/CSK/Logos/Logo_Round/CSK_Logo_Round.png", players: ["MS Dhoni", "Ruturaj Gaikwad", "Ravindra Jadeja", "Shivam Dube", "Matheesha Pathirana"] },
+    "RCB": { logo: "https://documents.iplt20.com/ipl/RCB/Logos/Logo_Round/RCB_Logo_Round.png", players: ["Virat Kohli", "Faf du Plessis", "Glenn Maxwell", "Mohammed Siraj", "Rajat Patidar"] },
+    "KKR": { logo: "https://documents.iplt20.com/ipl/KKR/Logos/Logo_Round/KKR_Logo_Round.png", players: ["Shreyas Iyer", "Sunil Narine", "Andre Russell", "Rinku Singh", "Mitchell Starc"] },
+    "GT": { logo: "https://documents.iplt20.com/ipl/GT/Logos/Logo_Round/GT_Logo_Round.png", players: ["Shubman Gill", "Rashid Khan", "David Miller", "Sai Sudharsan"] },
+    "SRH": { logo: "https://documents.iplt20.com/ipl/SRH/Logos/Logo_Round/SRH_Logo_Round.png", players: ["Pat Cummins", "Travis Head", "Abhishek Sharma", "Heinrich Klaasen"] },
+    "RR": { logo: "https://documents.iplt20.com/ipl/RR/Logos/Logo_Round/RR_Logo_Round.png", players: ["Sanju Samson", "Yashasvi Jaiswal", "Jos Buttler", "Yuzvendra Chahal"] },
+    "DC": { logo: "https://documents.iplt20.com/ipl/DC/Logos/Logo_Round/DC_Logo_Round.png", players: ["Rishabh Pant", "David Warner", "Axar Patel", "Kuldeep Yadav"] }
 };
 
-// --- SESSION ---
 window.onload = () => { if(localStorage.getItem("jodiUser")) startSession(localStorage.getItem("jodiUser")); };
 
 function startSession(u) {
-    currentUser = u; loginSection.classList.add("hidden"); homeSection.classList.remove("hidden");
-    displayUser.innerText = u;
+    currentUser = u; loginSection.classList.add("hidden"); homeSection.classList.remove("hidden"); userInfo.classList.remove("hidden");
     db.ref("Users/"+u+"/coins").on("value", sn => displayCoins.innerText = sn.val() || 0);
     if(ADMINS.includes(u)) adminBtn.classList.remove("hidden");
     runMatch.innerHTML = matchSelect.innerHTML;
 }
 
-function login() {
-    let u = username.value.toLowerCase().trim(); let p = password.value.trim();
-    db.ref("Users/"+u).once("value", s => {
-        if(!s.exists() || s.val().password !== p) return alert("Wrong ID/Pass");
-        localStorage.setItem("jodiUser", u); startSession(u);
-    });
-}
-
-function logout() { localStorage.removeItem("jodiUser"); location.reload(); }
-
-// --- LOGIC ---
 function checkMatchStatus() {
     let sel = matchSelect; if(!sel.value) return;
     let t1 = sel.options[sel.selectedIndex].getAttribute("data-t1");
@@ -137,6 +136,7 @@ function checkMatchStatus() {
     let matchDate = sel.options[sel.selectedIndex].getAttribute("data-date");
     let today = new Date().toISOString().split('T')[0];
 
+    imgT1.src = teamInfo[t1].logo; imgT2.src = teamInfo[t2].logo;
     labelT1.innerText = t1; labelT2.innerText = t2;
 
     if(matchDate === today) {
@@ -144,33 +144,25 @@ function checkMatchStatus() {
         autoLoadPlayers(sel.value, t1, t2);
     } else {
         activeMatchArea.classList.add("hidden"); statusMsg.classList.remove("hidden");
-        statusMsg.innerText = (matchDate > today) ? "🔒 Coming Soon" : "⌛ Finished";
-        loadJoined(sel.value);
+        statusMsg.innerText = (matchDate > today) ? "🔒 Coming Soon" : "⌛ Match Over";
+        loadGlobalAndPersonalScore(sel.value);
     }
 }
 
-// Automatic players load karnyathi
 function autoLoadPlayers(matchId, t1, t2) {
     db.ref("Players/"+matchId).once("value", snap => {
         if(!snap.exists()) {
-            // Jar database madhe nastil tar in-build list madhun load kara
-            playersData[t1].forEach(p => db.ref("Players/"+matchId+"/team1").push(p));
-            playersData[t2].forEach(p => db.ref("Players/"+matchId+"/team2").push(p));
+            teamInfo[t1].players.forEach(p => db.ref("Players/"+matchId+"/team1").push(p));
+            teamInfo[t2].players.forEach(p => db.ref("Players/"+matchId+"/team2").push(p));
         }
-        loadPlayersUI(matchId);
+        db.ref("Players/"+matchId+"/team1").once("value", s => {
+            let h = ""; s.forEach(d => h += `<option>${d.val()}</option>`); p1.innerHTML = h;
+        });
+        db.ref("Players/"+matchId+"/team2").once("value", s => {
+            let h = ""; s.forEach(d => h += `<option>${d.val()}</option>`); p2.innerHTML = h;
+        });
+        loadGlobalAndPersonalScore(matchId);
     });
-}
-
-function loadPlayersUI(m) {
-    db.ref("Players/"+m+"/team1").once("value", s => {
-        let h = ""; s.forEach(d => h += `<option>${d.val()}</option>`);
-        p1.innerHTML = h;
-    });
-    db.ref("Players/"+m+"/team2").once("value", s => {
-        let h = ""; s.forEach(d => h += `<option>${d.val()}</option>`);
-        p2.innerHTML = h;
-    });
-    loadJoined(m);
 }
 
 function joinMatch() {
@@ -178,36 +170,66 @@ function joinMatch() {
     db.ref("Selections/"+m).once("value", snap => {
         let count = 0, isDup = false;
         snap.forEach(c => { if(c.val().user === currentUser) { count++; if(c.val().pair === pair) isDup = true; }});
-        if(isDup) return alert("❌ Same Jodi!");
-        if(count >= 5) return alert("❌ Max 5 Limit!");
+        if(isDup) return alert("Same Jodi Selected!");
+        if(count >= 5) return alert("Max 5 Jodi Limit!");
 
         db.ref("Users/"+currentUser+"/coins").once("value", c => {
-            if(c.val() < 200) return alert("Low Coins!");
+            if(c.val() < 200) return alert("No Coins!");
             db.ref("Users/"+currentUser+"/coins").set(c.val() - 200);
             db.ref("Selections/"+m).push({user: currentUser, pair: pair});
-            alert("✅ Joined!");
+            alert("Joined!");
         });
     });
 }
 
-function loadJoined(m) {
+function loadGlobalAndPersonalScore(m) {
     db.ref("Selections/"+m).on("value", snap => {
         db.ref("LiveScore/"+m).on("value", sc => {
-            let scores = sc.val() || {}; joinList.innerHTML = "";
+            let scores = sc.val() || {}; 
+            let globalHTML = ""; let personalHTML = "";
+            let hasPersonal = false;
+
             snap.forEach(u => {
                 let d = u.val(); let p = d.pair.split(" & ");
                 let r1 = scores[p[0]] || 0, r2 = scores[p[1]] || 0;
-                joinList.innerHTML += `<div class="score-item"><div><b>${d.user}</b><br><small>${d.pair}</small></div><div class="text-end"><b>${r1}+${r2}</b><br>Total: ${r1+r2}</div></div>`;
+                let row = `
+                    <div class="score-row d-flex justify-content-between align-items-center">
+                        <div><b>${d.user}</b><br><small class="text-muted">${d.pair}</small></div>
+                        <div class="text-end text-danger fw-bold">${r1}+${r2}<br><span class="badge-total">Total: ${r1+r2}</span></div>
+                    </div>`;
+                
+                globalHTML += row;
+                if(d.user === currentUser) {
+                    personalHTML += row;
+                    hasPersonal = true;
+                }
             });
+
+            joinList.innerHTML = globalHTML || "<p class='text-center p-3'>No one joined yet</p>";
+            if(hasPersonal) {
+                mySection.classList.remove("hidden");
+                myList.innerHTML = `<div class="card p-3 my-jodi-card shadow-sm">${personalHTML}</div>`;
+            } else {
+                mySection.classList.add("hidden");
+            }
         });
     });
 }
 
-// ADMIN
-function syncAdminLabels() { loadAdminPlayers(); }
-function addPlayer() {
-    db.ref("Players/"+runMatch.value+"/"+admTeam.value).push(admPlayer.value).then(()=>alert("Saved"));
+function login() {
+    let u = username.value.toLowerCase().trim(); let p = password.value.trim();
+    db.ref("Users/"+u).once("value", s => {
+        if(!s.exists() || s.val().password !== p) return alert("Fail");
+        localStorage.setItem("jodiUser", u); startSession(u);
+    });
 }
+function signup() {
+    let u = username.value.toLowerCase().trim(); let p = password.value.trim();
+    db.ref("Users/"+u).set({password:p, coins:2000}).then(()=>alert("Signup Done"));
+}
+function logout() { localStorage.removeItem("jodiUser"); location.reload(); }
+function showAdmin() { homeSection.classList.add("hidden"); adminSection.classList.remove("hidden"); }
+function goHome() { adminSection.classList.add("hidden"); homeSection.classList.remove("hidden"); }
 function loadAdminPlayers() {
     runPlayer.innerHTML = "";
     db.ref("Players/"+runMatch.value).once("value", s => s.forEach(t => t.forEach(p => runPlayer.innerHTML += `<option>${p.val()}</option>`)));
@@ -215,13 +237,9 @@ function loadAdminPlayers() {
 function updateRuns() {
     db.ref("LiveScore/"+runMatch.value+"/"+runPlayer.value).set(parseInt(newRuns.value)).then(()=>alert("Updated"));
 }
-function signup() {
-    let u = username.value.toLowerCase().trim(); let p = password.value.trim();
-    db.ref("Users/"+u).set({password:p, coins:2000}).then(()=>alert("Done"));
+function addPlayer() {
+    db.ref("Players/"+runMatch.value+"/"+admTeam.value).push(admPlayer.value).then(()=>alert("Saved"));
 }
-function showAdmin() { homeSection.classList.add("hidden"); adminSection.classList.remove("hidden"); }
-function goHome() { adminSection.classList.add("hidden"); homeSection.classList.remove("hidden"); }
-function changeLanguage() { /* Toggle Labels logic */ }
 </script>
 </body>
 </html>
