@@ -159,17 +159,55 @@ function loadMatches() {
     });
 }
 
+// --- YAA FUNCTIONS LA REPLACE KARA ---
+
+// 1. Players Load karnyache Fixed Function
 function loadPlayers() {
     let m = document.getElementById("matchSelect").value;
     if(!m) return;
+    
     let p1 = document.getElementById("p1"), p2 = document.getElementById("p2");
-    p1.innerHTML = ""; p2.innerHTML = "";
-    db.ref("Players/" + m + "/team1").once("value", s => s.forEach(d => p1.innerHTML += `<option value="${d.val()}">${d.val()}</option>`));
-    db.ref("Players/" + m + "/team2").once("value", s => s.forEach(d => p2.innerHTML += `<option value="${d.val()}">${d.val()}</option>`));
+    p1.innerHTML = "<option>Loading...</option>"; 
+    p2.innerHTML = "<option>Loading...</option>";
+
+    // .on vaparlyamule real-time refresh hoil
+    db.ref("Players/" + m + "/team1").on("value", s => {
+        p1.innerHTML = ""; // Clear Loading
+        if(!s.exists()) { p1.innerHTML = "<option>No Players</option>"; }
+        s.forEach(d => {
+            p1.innerHTML += `<option value="${d.val()}">${d.val()}</option>`;
+        });
+    });
+
+    db.ref("Players/" + m + "/team2").on("value", s => {
+        p2.innerHTML = ""; // Clear Loading
+        if(!s.exists()) { p2.innerHTML = "<option>No Players</option>"; }
+        s.forEach(d => {
+            p2.innerHTML += `<option value="${d.val()}">${d.val()}</option>`;
+        });
+    });
+
     document.getElementById("playerSelection").classList.remove("hidden");
     document.getElementById("joinedSection").classList.remove("hidden");
     loadJoined(m);
 }
+
+// 2. Player Add karnyache Fixed Function (Admin)
+function addPlayer() {
+    let m = document.getElementById("admMatch").value.trim().replace(/\s+/g, '_');
+    let t = document.getElementById("admTeam").value; // team1 ki team2
+    let p = document.getElementById("admPlayer").value.trim();
+    
+    if(!m || !p) return alert("Match name aani Player name taka!");
+
+    // Navin player push karne
+    db.ref("Players/" + m + "/" + t).push(p).then(() => {
+        alert(p + " Added to " + t);
+        document.getElementById("admPlayer").value = ""; // Input clear kara
+        loadMatches(); // Dropdown refresh kara
+    }).catch(err => alert("Error: " + err));
+}
+
 
 function joinMatch() {
     let m = document.getElementById("matchSelect").value;
