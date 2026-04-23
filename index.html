@@ -50,8 +50,8 @@
     <button onclick="joinMatch()">Join Jodi (200)</button>
     <p id="msg"></p>
   </div>
-
-  <button onclick="loadHistory()">📜 History</button>
+<h3>📋 Joined Users</h3>
+<div id="joinList"></div>backHomekHome<button onclick="loadHistory()">📜 History</button>
   <button onclick="loadLeaderboard()">🏆 Leaderboard</button>
 
   <div id="adminBtn" class="hidden">
@@ -66,7 +66,7 @@
   <input id="team" placeholder="team1 / team2">
   <input id="playerName" placeholder="Player Name">
   <button onclick="addPlayer()">Add Player</button>
-  <button onclick="backHome()">Back</button>
+  <buttonbackHome="backHome()">Back</button>
 </div>
 
 <!-- HISTORY -->
@@ -157,9 +157,10 @@ function loadPlayers() {
   });
 
   document.getElementById("playerBox").style.display="block";
-}
 
-// Join
+  // 🔥 NEW
+  loadJoined();
+}functionn
 function joinMatch() {
   let m = match.value;
   let pair = p1.value + "_" + p2.value;
