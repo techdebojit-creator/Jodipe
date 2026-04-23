@@ -1,4 +1,4 @@
-team1 html>
+team2l>
 <html>
 <head>
   <title>Jodi11 IPL</title>
@@ -149,7 +149,7 @@ function loadPlayers() {
   p1.innerHTML="";
   p2.innerHTML="";
 
-  db.ref("Players/"+m+"/team2").once("value").then(snap=>{
+  db.ref("Players/"+m+"/Match1/"+m+"MI").once("value").then(snap=>{
     snap.forEach(d=>p1.innerHTML+=`<option>${d.val()}</option>`);
   });
 
