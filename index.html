@@ -117,12 +117,11 @@ function signup() {
 
 // LOGIN
 function login() {
-  let u = document.getElementById("username").value.trim();
+function login() {
+  let u = document.getElementById("username").value.toLowerCase().trim();
   let p = document.getElementById("password").value.trim();
-console.log("Username:", u);
-console.log("Password:", p);
-  db.ref("Users/" + u).once("value")
-  .then((snap) => {
+
+  db.ref("Users/" + u).once("value").then(snap => {
 
     if (!snap.exists()) {
       alert("User not exist ❌");
@@ -131,19 +130,15 @@ console.log("Password:", p);
 
     let data = snap.val();
 
-    console.log(data);
-console.log("Firebase Data:", d);
-    if (data.password === p) {
+    console.log("Firebase:", data);
+
+    if (data.password.trim() === p) {
       currentUser = u;
       showHome(data.coins);
     } else {
       alert("Wrong password ❌");
     }
 
-  })
-  .catch((err) => {
-    console.log(err);
-    alert("Error login ❌");
   });
 }
 
