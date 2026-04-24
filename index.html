@@ -68,10 +68,6 @@
                 <option value="GT_vs_RCB" data-t1="GT" data-t2="RCB">30 Apr: GT vs RCB</option>
                 <option value="RR_vs_DC" data-t1="RR" data-t2="DC">01 May: RR vs DC</option>
                 <option value="CSK_vs_MI" data-t1="CSK" data-t2="MI">02 May: CSK vs MI</option>
-                <option value="SRH_vs_KKR" data-t1="SRH" data-t2="KKR">03 May: SRH vs KKR (3:30 PM)</option>
-                <option value="GT_vs_PBKS" data-t1="GT" data-t2="PBKS">03 May: GT vs PBKS (7:30 PM)</option>
-                <option value="MI_vs_LSG" data-t1="MI" data-t2="LSG">04 May: MI vs LSG</option>
-                <option value="DC_vs_CSK" data-t1="DC" data-t2="CSK">05 May: DC vs CSK</option>
             </select>
 
             <div id="activeMatchArea" class="hidden">
@@ -90,7 +86,7 @@
         </div>
 
         <div id="myDashboard" class="hidden"><h6 class="fw-bold text-success small">🎯 माझी जोडी</h6><div id="myList"></div></div>
-        <div id="scoreArea"><h6 class="fw-bold mb-2 small">📊 स्कोअरボード</h6><div id="joinList" class="card p-3"></div></div>
+        <div id="scoreArea"><h6 class="fw-bold mb-2 small">📊 स्कोअरबोर्ड</h6><div id="joinList" class="card p-3"></div></div>
 
         <div class="d-grid gap-2 mt-4 pb-5">
             <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark hidden">⚙️ ADMIN CONTROL</button>
@@ -99,20 +95,27 @@
     </div>
 
     <div id="adminSection" class="card p-4 hidden">
-        <h6 class="fw-bold text-danger border-bottom pb-2">⚙️ ADMIN CONTROL</h6>
-        <div class="bg-light p-2 rounded mb-3">
-            <input id="targetUser" class="form-control form-control-sm mb-1" placeholder="User ID">
-            <input id="addAmount" type="number" class="form-control form-control-sm mb-1" placeholder="Amount">
-            <button onclick="updateUserCoins()" class="btn btn-warning btn-sm w-100">Add Coins</button>
+        <h6 class="fw-bold text-danger border-bottom pb-2">⚙️ ADMIN MASTER CONTROL</h6>
+        <div class="bg-light p-2 rounded mb-3 border">
+            <label class="small fw-bold">💰 User Coins Management</label>
+            <div class="d-flex gap-1 mt-1">
+                <input id="targetUser" class="form-control form-control-sm" placeholder="User ID">
+                <input id="addAmount" type="number" class="form-control form-control-sm" placeholder="Coins">
+                <button onclick="updateUserCoins()" class="btn btn-warning btn-sm fw-bold">Add</button>
+            </div>
         </div>
-        <select id="runMatch" class="form-select mb-3" onchange="loadAdminPlayers()"></select>
-        <div id="adminPlayerList" style="max-height: 200px; overflow-y: auto;"></div>
-        <button onclick="goHome()" class="btn btn-link w-100 mt-2">Home</button>
+        <div class="bg-white">
+            <label class="small fw-bold">🏏 Live Score Update</label>
+            <select id="runMatch" class="form-select form-select-sm mb-3" onchange="loadAdminPlayers()"></select>
+            <div id="adminPlayerList" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; padding: 5px;">
+                <p class="text-center text-muted small">मॅच निवडा...</p>
+            </div>
+        </div>
+        <button onclick="goHome()" class="btn btn-secondary w-100 mt-3 btn-sm">Home ला जा</button>
     </div>
 </div>
 
 <script>
-// --- Configuration & Initialization (Existing Firebase Setup) ---
 const firebaseConfig = { apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs", databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -136,8 +139,6 @@ const squad2026 = {
 
 window.onload = () => { if(localStorage.getItem("jodiUser")) startSession(localStorage.getItem("jodiUser")); };
 
-// [Existing Auth Functions: toggleAuthMode, signup, login, startSession, showCoinForm, submitCoinRequest remain unchanged]
-
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     authTitle.innerText = isLoginMode ? "लॉगिन करा" : "नवीन खाते उघडा";
@@ -149,8 +150,8 @@ function signup() {
     let u = username.value.toLowerCase().trim(); let p = password.value.trim();
     if(!u || !p) return alert("सर्व माहिती भरा!");
     db.ref("Users/"+u).once("value", s => {
-        if(s.exists()) return alert("User ID आधीच घेतला आहे!");
-        db.ref("Users/"+u).set({password:p, coins:0}).then(()=> { alert("Account Created! Login करा."); toggleAuthMode(); });
+        if(s.exists()) return alert("User ID व्यस्त आहे!");
+        db.ref("Users/"+u).set({password:p, coins:0}).then(()=> { alert("Account Created!"); toggleAuthMode(); });
     });
 }
 
@@ -169,16 +170,13 @@ function startSession(u) {
     runMatch.innerHTML = matchSelect.innerHTML;
 }
 
-function showCoinForm() { homeSection.classList.add("hidden"); coinFormSection.classList.remove("hidden"); }
-
 function submitCoinRequest() {
     let mob = reqMobile.value; let utr = reqUTR.value;
     if(!mob || !utr) return alert("सर्व माहिती भरा!");
     db.ref("CoinRequests").push({ user: currentUser, mobile: mob, utr: utr, status: "Pending", time: new Date().toLocaleString() })
-    .then(() => { alert("विनंती पाठवली आहे!"); goHome(); });
+    .then(() => { alert("विनंती पाठवली!"); goHome(); });
 }
 
-// MATCH LOGIC & SCORE (Same as before but with new schedule support)
 function checkMatchStatus() {
     let sel = matchSelect; if(!sel.value) return;
     let t1 = sel.options[sel.selectedIndex].getAttribute("data-t1");
@@ -210,17 +208,13 @@ function joinMatch() {
     let mid = matchSelect.value;
     let pairID = p1.value + "|" + p2.value;
     let pairNames = p1.options[p1.selectedIndex].text + " & " + p2.options[p2.selectedIndex].text;
-
     db.ref("Selections/"+mid).once("value", snap => {
-        let isAlreadyPicked = false;
-        snap.forEach(child => { if(child.val().user === currentUser && child.val().pairID === pairID) isAlreadyPicked = true; });
-        if(isAlreadyPicked) return alert("ही जोडी आधीच निवडली आहे!");
-
+        let dup = false; snap.forEach(c => { if(c.val().user===currentUser && c.val().pairID===pairID) dup=true; });
+        if(dup) return alert("जोडी आधीच निवडली आहे!");
         db.ref("Users/"+currentUser+"/coins").once("value", c => {
-            let bal = c.val() || 0;
-            if(bal < 200) return alert("पुरेशी कॉइन्स नाहीत!");
-            db.ref("Users/"+currentUser+"/coins").set(bal - 200);
-            db.ref("Selections/"+mid).push({user: currentUser, pairID: pairID, pairNames: pairNames});
+            let b = c.val()||0; if(b<200) return alert("Coins नाहीत!");
+            db.ref("Users/"+currentUser+"/coins").set(b-200);
+            db.ref("Selections/"+mid).push({user:currentUser, pairID:pairID, pairNames:pairNames});
             alert("जोडी लावली!");
         });
     });
@@ -228,35 +222,53 @@ function joinMatch() {
 
 function refreshScore(mid) {
     db.ref("Selections/"+mid).on("value", snap => {
-        db.ref("LiveScore/"+mid).on("value", sSnap => {
-            let runs = sSnap.val() || {}; let gHTML = ""; let mHTML = ""; let hasM = false;
+        db.ref("LiveScore/"+mid).on("value", scSnap => {
+            let runs = scSnap.val() || {}; let gH = ""; let mH = ""; let hasM = false;
             snap.forEach(u => {
                 let d = u.val(); let ids = d.pairID.split("|");
-                let r1 = runs[ids[0]] || 0; let r2 = runs[ids[1]] || 0;
-                let row = `<div class="score-row"><div><b>${d.user}</b><br><small>${d.pairNames.split(" & ")[0]}(${r1}) + ${d.pairNames.split(" & ")[1]}(${r2})</small></div><div class="total-badge">${r1+r2}</div></div>`;
-                gHTML += row; if(d.user === currentUser) { mHTML += row; hasM = true; }
+                let r1 = runs[ids[0]]||0; let r2 = runs[ids[1]]||0;
+                let row = `<div class="score-row"><div><b>${d.user}</b><br><small>${d.pairNames}</small></div><div class="total-badge">${r1+r2}</div></div>`;
+                gH += row; if(d.user===currentUser) { mH += row; hasM = true; }
             });
-            joinList.innerHTML = gHTML || "<small>No entries</small>";
-            if(hasM) { myDashboard.classList.remove("hidden"); myList.innerHTML = mHTML; }
+            joinList.innerHTML = gH || "<small>No entries</small>";
+            if(hasM) { myDashboard.classList.remove("hidden"); myList.innerHTML = mH; }
         });
     });
 }
 
-// ADMIN FUNCTIONS (Unchanged)
-function updateUserCoins() {
-    let t = targetUser.value.toLowerCase().trim(); let a = parseInt(addAmount.value);
-    db.ref("Users/"+t+"/coins").once("value", s => db.ref("Users/"+t+"/coins").set((s.val()||0) + a).then(()=>alert("Added!")));
-}
+// ADMIN LOGIC
 function loadAdminPlayers() {
     let mid = runMatch.value; if(!mid) return;
-    db.ref("Players/"+mid).once("value", s => {
-        let h = ""; s.forEach(t => t.forEach(p => h += `<div class="d-flex justify-content-between p-1 border-bottom bg-white"><span>${p.val()}</span><button onclick="editSc('${mid}','${p.key}')" class="btn btn-sm btn-warning">Runs</button></div>`));
-        adminPlayerList.innerHTML = h;
+    db.ref("Players/"+mid).once("value", snap => {
+        db.ref("LiveScore/"+mid).on("value", scSnap => {
+            let scores = scSnap.val() || {}; let h = "";
+            snap.forEach(team => {
+                h += `<div class="bg-dark text-white p-1 small mt-2">${team.key.toUpperCase()}</div>`;
+                team.forEach(p => {
+                    let pid = p.key; let r = scores[pid]||0;
+                    h += `<div class="d-flex justify-content-between p-2 border-bottom align-items-center">
+                        <span>${p.val()} (<b>${r}</b>)</span>
+                        <div>
+                            <button onclick="editSc('${mid}','${pid}','${p.val()}',${r})" class="btn btn-sm btn-success py-0">Edit</button>
+                            <button onclick="delSc('${mid}','${pid}','${p.val()}')" class="btn btn-sm btn-outline-danger py-0">Reset</button>
+                        </div>
+                    </div>`;
+                });
+            });
+            adminPlayerList.innerHTML = h;
+        });
     });
 }
-function editSc(m,id){ let s=prompt("Runs:"); if(s) db.ref(`LiveScore/${m}/${id}`).set(parseInt(s)); }
+
+function editSc(m,id,n,c){ let s=prompt("Update runs for "+n,c); if(s!==null) db.ref(`LiveScore/${m}/${id}`).set(parseInt(s)); }
+function delSc(m,id,n){ if(confirm("Reset "+n+"?")) db.ref(`LiveScore/${m}/${id}`).remove(); }
+function updateUserCoins() {
+    let t = targetUser.value.toLowerCase().trim(); let a = parseInt(addAmount.value);
+    db.ref("Users/"+t+"/coins").once("value", s => db.ref("Users/"+t+"/coins").set((s.val()||0)+a).then(()=>alert("Done!")));
+}
+function showCoinForm() { homeSection.classList.add("hidden"); coinFormSection.classList.remove("hidden"); }
 function goHome() { coinFormSection.classList.add("hidden"); adminSection.classList.add("hidden"); homeSection.classList.remove("hidden"); }
-function showAdmin() { homeSection.classList.add("hidden"); adminSection.classList.remove("hidden"); }
+function showAdmin() { homeSection.classList.add("hidden"); adminSection.classList.remove("hidden"); runMatch.innerHTML = matchSelect.innerHTML; }
 function logout() { localStorage.removeItem("jodiUser"); location.reload(); }
 </script>
 </body>
