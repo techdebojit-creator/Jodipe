@@ -26,7 +26,22 @@
         <div id="coinBox" class="hidden"><span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span></div>
     </div>
 </nav>
-<div class="card p-3 mb-3 shadow-sm border-warning">
+
+<div class="container mt-3">
+    <div id="authSection" class="card p-4 mx-auto shadow" style="max-width: 400px;">
+        <h4 class="text-center fw-bold mb-4" id="authTitle">Login</h4>
+        <input id="userId" class="form-control mb-3" placeholder="Username">
+        <input id="userPass" type="password" class="form-control mb-3" placeholder="Password">
+        <div id="loginGroup">
+            <button onclick="handleAuth(true)" class="btn btn-primary w-100 fw-bold mb-3">LOG IN</button>
+            <p class="text-center small">Account nahi? <a href="#" onclick="toggleAuth(false)">Sign Up</a></p>
+        </div>
+        <div id="signupGroup" class="hidden">
+            <button onclick="handleAuth(false)" class="btn btn-success w-100 fw-bold mb-3">SIGN UP</button>
+            <p class="text-center small">Account aahe? <a href="#" onclick="toggleAuth(true)">Login</a></p>
+        </div>
+    </div>
+    <div class="card p-3 mb-3 shadow-sm border-warning">
     <div class="d-flex justify-content-between align-items-center mb-2">
         <h6 class="m-0 fw-bold">💰 Balance: ₹ <span id="userBalance">0</span></h6>
         <button onclick="document.getElementById('reqBox').classList.toggle('hidden')" class="btn btn-sm btn-outline-warning">+ Add Coins</button>
@@ -44,20 +59,6 @@
         </div>
 </div>
 
-<div class="container mt-3">
-    <div id="authSection" class="card p-4 mx-auto shadow" style="max-width: 400px;">
-        <h4 class="text-center fw-bold mb-4" id="authTitle">Login</h4>
-        <input id="userId" class="form-control mb-3" placeholder="Username">
-        <input id="userPass" type="password" class="form-control mb-3" placeholder="Password">
-        <div id="loginGroup">
-            <button onclick="handleAuth(true)" class="btn btn-primary w-100 fw-bold mb-3">LOG IN</button>
-            <p class="text-center small">Account nahi? <a href="#" onclick="toggleAuth(false)">Sign Up</a></p>
-        </div>
-        <div id="signupGroup" class="hidden">
-            <button onclick="handleAuth(false)" class="btn btn-success w-100 fw-bold mb-3">SIGN UP</button>
-            <p class="text-center small">Account aahe? <a href="#" onclick="toggleAuth(true)">Login</a></p>
-        </div>
-    </div>
 
     <div id="mainApp" class="hidden">
         <div class="card p-3 mb-3">
@@ -273,6 +274,38 @@ function loadAdminPlayers() {
             adminPlayerList.innerHTML = h;
         });
     });
+}
+function proceedApp(id) {
+    user = id; 
+    // ... baki junya code chya lines ...
+
+    // --- HE NAVIN ADD KARA ---
+    // User Balance Update
+    db.ref("Users/" + user + "/coins").on("value", s => {
+        document.getElementById("userBalance").innerText = s.val() || 0;
+    });
+
+    // Admin Request List Update
+    if (user === "santoshbagul") {
+        document.getElementById("adminWalletPanel").classList.remove("hidden");
+        db.ref("CoinRequests").on("value", snapshot => {
+            let html = "";
+            if (!snapshot.exists()) {
+                html = "<p class='small text-muted text-center'>No requests.</p>";
+            } else {
+                snapshot.forEach(item => {
+                    let d = item.val();
+                    html += `
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <span class="small"><b>${d.u}</b>: ₹${d.amount}</span>
+                            <button onclick="approveCoins('${item.key}', '${d.u}', ${d.amount})" 
+                                    class="btn btn-sm btn-success py-0">Approve</button>
+                        </div>`;
+                });
+            }
+            document.getElementById("reqListArea").innerHTML = html;
+        });
+    }
 }
 
 function showAdmin() { mainApp.classList.add("hidden"); adminPanel.classList.remove("hidden"); loadAdminPlayers(); }
