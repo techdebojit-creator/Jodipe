@@ -26,6 +26,23 @@
         <div id="coinBox" class="hidden"><span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span></div>
     </div>
 </nav>
+<div class="card p-3 mb-3 shadow-sm border-warning">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="m-0 fw-bold">💰 Balance: ₹ <span id="userBalance">0</span></h6>
+        <button onclick="document.getElementById('reqBox').classList.toggle('hidden')" class="btn btn-sm btn-outline-warning">+ Add Coins</button>
+    </div>
+    
+    <div id="reqBox" class="input-group input-group-sm hidden">
+        <input id="coinAmt" type="number" class="form-control" placeholder="Rakkam taka">
+        <button onclick="sendCoinReq()" class="btn btn-warning fw-bold">Request</button>
+    </div>
+</div>
+
+<div id="adminWalletPanel" class="card p-3 mb-3 border-danger hidden">
+    <h6 class="text-danger fw-bold border-bottom pb-2">🔔 Pending Coin Requests</h6>
+    <div id="reqListArea">
+        </div>
+</div>
 
 <div class="container mt-3">
     <div id="authSection" class="card p-4 mx-auto shadow" style="max-width: 400px;">
@@ -135,6 +152,32 @@ function proceedApp(id) {
     if(user === ADMIN_ID) adminBtn.classList.remove("hidden");
     db.ref("Users/"+user+"/coins").on("value", s => balanceText.innerText = s.val()||0);
     loadMatches();
+}
+// 1. Request Pathvane
+function sendCoinReq() {
+    let amt = parseInt(document.getElementById("coinAmt").value);
+    if (!amt || amt <= 0) return alert("Rakkam taka!");
+
+    db.ref("CoinRequests").push({
+        u: user, // user mhanje login jhalela ID
+        amount: amt,
+        status: "pending"
+    }).then(() => {
+        alert("Request Sent! Admin approve karel.");
+        document.getElementById("coinAmt").value = "";
+        document.getElementById("reqBox").classList.add("hidden");
+    });
+}
+
+// 2. Admin ne Approve karane
+function approveCoins(reqId, targetUser, amt) {
+    db.ref("Users/" + targetUser + "/coins").once("value", s => {
+        let current = s.val() || 0;
+        db.ref("Users/" + targetUser + "/coins").set(current + amt).then(() => {
+            db.ref("CoinRequests/" + reqId).remove(); // Approve jhalyaver delete kara
+            alert(amt + " coins added to " + targetUser);
+        });
+    });
 }
 
 // Match & Player Logic
