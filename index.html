@@ -3,264 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jodi11 Pro - Santosh Bagul</title>
+    <title>JODI11 PRO - Admin Master</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #1a237e; --bg: #f4f7f6; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); font-size: 14px; }
-        .navbar { background: linear-gradient(135deg, #1a237e, #0d47a1); color: white; padding: 12px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
-        .card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .coin-badge { background: #fff3e0; color: #e65100; padding: 5px 12px; border-radius: 20px; font-weight: 700; border: 1px solid #ffcc80; display: flex; align-items: center; gap: 8px; }
-        .btn-add-coin { background: #e65100; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 14px; line-height: 1; font-weight: bold; cursor: pointer; }
-        .score-row { border-bottom: 1px solid #eee; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; }
-        .total-badge { background: #1a237e; color: white; padding: 4px 10px; border-radius: 8px; font-weight: 700; }
+        :root { --primary: #002f6c; --secondary: #ffcc00; }
+        body { font-family: 'Poppins', sans-serif; background: #f4f7f6; font-size: 14px; }
+        .navbar { background: var(--primary); color: white; border-bottom: 3px solid var(--secondary); }
+        .card { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
-        .team-logo { width: 35px; height: 35px; object-fit: contain; }
+        .btn-primary { background: var(--primary); border: none; }
+        .admin-badge { background: #ffebee; color: #c62828; font-weight: bold; border: 1px solid #ef9a9a; }
     </style>
 </head>
 <body>
 
-<div class="navbar d-flex justify-content-between align-items-center px-3">
-    <h5 class="m-0 fw-bold">🏏 JODI11 PRO</h5>
-    <div id="coinArea" class="hidden">
-        <div class="coin-badge">
-            💰 <span id="displayCoins">0</span>
-            <button class="btn-add-coin" onclick="showCoinForm()">+</button>
-        </div>
+<nav class="navbar px-3 py-2">
+    <div class="container-fluid d-flex justify-content-between">
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO</h5>
+        <div id="coinBox" class="hidden"><span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span></div>
     </div>
-</div>
+</nav>
 
 <div class="container mt-3">
-    <div id="loginSection" class="card p-4 mx-auto" style="max-width: 400px;">
-        <h6 class="text-center fw-bold mb-3" id="authTitle">लॉगिन करा</h6>
-        <input id="username" class="form-control mb-2" placeholder="User ID">
-        <input id="password" type="password" class="form-control mb-3" placeholder="Password">
-        <button id="loginBtn" onclick="login()" class="btn btn-primary w-100 fw-bold mb-2">LOGIN</button>
-        <button id="signupBtn" onclick="signup()" class="btn btn-success w-100 fw-bold hidden">CREATE ACCOUNT</button>
-        <div class="text-center mt-2">
-            <a href="javascript:void(0)" onclick="toggleAuthMode()" id="toggleAuth" class="small text-decoration-none">नवीन खाते उघडा</a>
+    <div id="authSection" class="card p-4 mx-auto shadow" style="max-width: 400px;">
+        <h4 class="text-center fw-bold mb-4" id="authTitle">Login</h4>
+        <input id="userId" class="form-control mb-3" placeholder="Username">
+        <input id="userPass" type="password" class="form-control mb-3" placeholder="Password">
+        <div id="loginGroup">
+            <button onclick="handleAuth(true)" class="btn btn-primary w-100 fw-bold mb-3">LOG IN</button>
+            <p class="text-center small">Account nahi? <a href="#" onclick="toggleAuth(false)">Sign Up</a></p>
+        </div>
+        <div id="signupGroup" class="hidden">
+            <button onclick="handleAuth(false)" class="btn btn-success w-100 fw-bold mb-3">SIGN UP</button>
+            <p class="text-center small">Account aahe? <a href="#" onclick="toggleAuth(true)">Login</a></p>
         </div>
     </div>
 
-    <div id="coinFormSection" class="card p-4 hidden">
-        <h6 class="fw-bold text-primary mb-3">💰 कॉइन्ससाठी विनंती करा</h6>
-        <p class="small text-muted">Admin ला पेमेंट केल्यानंतर खालील माहिती भरा.</p>
-        <input id="reqMobile" class="form-control mb-2" placeholder="Mobile No." type="number">
-        <input id="reqUTR" class="form-control mb-3" placeholder="UTR / Transaction ID">
-        <button onclick="submitCoinRequest()" class="btn btn-warning w-100 fw-bold">SUBMIT REQUEST</button>
-        <button onclick="goHome()" class="btn btn-link w-100 mt-2 text-decoration-none text-muted">मागे जा</button>
-    </div>
-
-    <div id="homeSection" class="hidden">
+    <div id="mainApp" class="hidden">
         <div class="card p-3 mb-3">
-            <select id="matchSelect" class="form-select mb-3" onchange="checkMatchStatus()">
-                <option value="">-- मॅच निवडा --</option>
-                <option value="MI_vs_CSK" data-t1="MI" data-t2="CSK">MI vs CSK</option>
-                <option value="RCB_vs_SRH" data-t1="RCB" data-t2="SRH">RCB vs SRH</option>
-            </select>
+            <label class="small fw-bold text-muted">SELECT MATCH</label>
+            <select id="matchSelect" class="form-select mb-3" onchange="loadMatchBoard()"></select>
 
-            <div id="activeMatchArea" class="hidden">
-                <div class="row g-2 mb-3 text-center">
-                    <div class="col-6 border-end">
-                        <img id="imgT1" class="team-logo"><br><b id="labelT1"></b>
-                        <select id="p1" class="form-select form-select-sm mt-1"></select>
-                    </div>
-                    <div class="col-6">
-                        <img id="imgT2" class="team-logo"><br><b id="labelT2"></b>
-                        <select id="p2" class="form-select form-select-sm mt-1"></select>
-                    </div>
+            <div id="playArea" class="hidden">
+                <div class="row g-2 mb-3">
+                    <div class="col-6"><select id="p1" class="form-select form-select-sm"></select></div>
+                    <div class="col-6"><select id="p2" class="form-select form-select-sm"></select></div>
                 </div>
-                <button onclick="joinMatch()" class="btn btn-success w-100 fw-bold">जोडी लावा (200 Coins)</button>
+                <button onclick="joinJodi()" class="btn btn-success w-100 fw-bold">JOIN JODI (200 Coins)</button>
             </div>
         </div>
 
-        <div id="myDashboard" class="hidden"><h6 class="fw-bold text-success small">🎯 माझी जोडी</h6><div id="myList"></div></div>
-        <div id="scoreArea"><h6 class="fw-bold mb-2 small">📊 स्कोअरबोर्ड</h6><div id="joinList" class="card p-3"></div></div>
+        <h6 class="fw-bold">📊 LIVE STANDINGS</h6>
+        <div id="scoreBoard" class="card p-2 mb-4" style="min-height: 100px;"></div>
 
-        <div class="d-grid gap-2 mt-4 pb-5">
-            <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark hidden">⚙️ ADMIN CONTROL</button>
-            <button onclick="logout()" class="btn btn-outline-danger btn-sm">LOGOUT</button>
+        <div class="d-flex gap-2 pb-5">
+            <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark w-100 hidden">⚙️ ADMIN CONTROL</button>
+            <button onclick="location.reload()" class="btn btn-outline-danger w-100">LOGOUT</button>
         </div>
     </div>
 
-    <div id="adminSection" class="card p-4 hidden">
-        <h6 class="fw-bold text-danger border-bottom pb-2">⚙️ ADMIN CONTROL</h6>
-        <div class="bg-light p-2 rounded mb-3">
-            <label class="small fw-bold">Coins Add Kara:</label>
-            <input id="targetUser" class="form-control form-control-sm mb-1" placeholder="User ID">
-            <input id="addAmount" type="number" class="form-control form-control-sm mb-1" placeholder="Amount">
-            <button onclick="updateUserCoins()" class="btn btn-warning btn-sm w-100">Add Coins</button>
+    <div id="adminPanel" class="hidden">
+        <div class="card p-3 admin-badge mb-3">
+            <h6 class="m-0">ADMIN MASTER CONTROL</h6>
         </div>
-        <select id="runMatch" class="form-select mb-3" onchange="loadAdminPlayers()"></select>
-        <div id="adminPlayerList" style="max-height: 200px; overflow-y: auto;"></div>
-        <button onclick="goHome()" class="btn btn-link w-100 mt-2">Home</button>
+
+        <div class="card p-3 mb-3 border-primary">
+            <p class="fw-bold small mb-2 text-primary text-uppercase">1. Add New IPL Match</p>
+            <input id="newMatchId" class="form-control form-control-sm mb-2" placeholder="Match ID (e.g. MI_vs_RCB)">
+            <div class="row g-2 mb-2">
+                <div class="col-6"><input id="team1Name" class="form-control form-control-sm" placeholder="Team 1 Name"></div>
+                <div class="col-6"><input id="team2Name" class="form-control form-control-sm" placeholder="Team 2 Name"></div>
+            </div>
+            <button onclick="addNewMatch()" class="btn btn-primary btn-sm w-100">Create Match</button>
+        </div>
+
+        <div class="card p-3 mb-3 border-success">
+            <p class="fw-bold small mb-2 text-success text-uppercase">2. Add Missing Player</p>
+            <select id="targetMatch" class="form-select form-select-sm mb-2"></select>
+            <div class="input-group input-group-sm mb-2">
+                <select id="playerTeam" class="form-select"><option value="team1">Team 1</option><option value="team2">Team 2</option></select>
+                <input id="playerName" class="form-control" placeholder="Player Name">
+            </div>
+            <button onclick="addPlayerToMatch()" class="btn btn-success btn-sm w-100">Add Player</button>
+        </div>
+
+        <div class="card p-3 mb-3 border-warning">
+            <p class="fw-bold small mb-2 text-dark text-uppercase">3. Live Run Updater</p>
+            <div id="adminPlayerList" class="bg-white border rounded" style="max-height: 250px; overflow-y: auto;"></div>
+        </div>
+
+        <button onclick="closeAdmin()" class="btn btn-secondary w-100 mb-5">Back to Home</button>
     </div>
 </div>
 
 <script>
-const firebaseConfig = { apiKey: "AIzaSyBmSqOfLbGgJ9cj_o6xMtq9IvmRNqlDvlE", databaseURL: "https://studio-8305688256-12b4c-default-rtdb.firebaseio.com" };
+const firebaseConfig = { apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs", databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let currentUser = "";
-let isLoginMode = true;
-const ADMINS = ["admin", "santoshbagul"];
+let user = "";
+const ADMIN_ID = "santoshbagul";
 
-const squad2026 = {
-    "MI": { logo: "https://documents.iplt20.com/ipl/MI/Logos/Logo_Round/MI_Logo_Round.png", players: ["Hardik Pandya", "Rohit Sharma", "Suryakumar Yadav", "Jasprit Bumrah"] },
-    "CSK": { logo: "https://documents.iplt20.com/ipl/CSK/Logos/Logo_Round/CSK_Logo_Round.png", players: ["Ruturaj Gaikwad", "MS Dhoni", "Sanju Samson", "Shivam Dube"] },
-    "RCB": { logo: "https://documents.iplt20.com/ipl/RCB/Logos/Logo_Round/RCB_Logo_Round.png", players: ["Virat Kohli", "Rajat Patidar", "Phil Salt"] },
-    "SRH": { logo: "https://documents.iplt20.com/ipl/SRH/Logos/Logo_Round/SRH_Logo_Round.png", players: ["Pat Cummins", "Travis Head", "Abhishek Sharma"] }
-};
-
-window.onload = () => { if(localStorage.getItem("jodiUser")) startSession(localStorage.getItem("jodiUser")); };
-
-// AUTH
-function toggleAuthMode() {
-    isLoginMode = !isLoginMode;
-    authTitle.innerText = isLoginMode ? "लॉगिन करा" : "नवीन खाते उघडा";
-    loginBtn.classList.toggle("hidden", !isLoginMode);
-    signupBtn.classList.toggle("hidden", isLoginMode);
+// Auth Function
+function toggleAuth(isLogin) {
+    authTitle.innerText = isLogin ? "Login" : "Sign Up";
+    loginGroup.classList.toggle("hidden", !isLogin);
+    signupGroup.classList.toggle("hidden", isLogin);
 }
 
-function signup() {
-    let u = username.value.toLowerCase().trim(); let p = password.value.trim();
-    if(!u || !p) return alert("Fill all!");
-    db.ref("Users/"+u).once("value", s => {
-        if(s.exists()) return alert("User ID busy!");
-        db.ref("Users/"+u).set({password:p, coins:0}).then(()=> { alert("Created! Login now."); toggleAuthMode(); });
-    });
-}
+function handleAuth(isLogin) {
+    let id = userId.value.toLowerCase().trim();
+    let pass = userPass.value.trim();
+    if(!id || !pass) return alert("All fields required!");
 
-function login() {
-    let u = username.value.toLowerCase().trim(); let p = password.value.trim();
-    db.ref("Users/"+u).once("value", s => {
-        if(!s.exists() || s.val().password !== p) return alert("Wrong!");
-        localStorage.setItem("jodiUser", u); startSession(u);
-    });
-}
-
-function startSession(u) {
-    currentUser = u; loginSection.classList.add("hidden"); homeSection.classList.remove("hidden"); coinArea.classList.remove("hidden");
-    db.ref("Users/"+u+"/coins").on("value", s => displayCoins.innerText = s.val() || 0);
-    if(ADMINS.includes(u)) adminBtn.classList.remove("hidden");
-    runMatch.innerHTML = matchSelect.innerHTML;
-}
-
-// COIN REQUEST
-function showCoinForm() { homeSection.classList.add("hidden"); coinFormSection.classList.remove("hidden"); }
-
-function submitCoinRequest() {
-    let mob = document.getElementById("reqMobile").value;
-    let utr = document.getElementById("reqUTR").value;
-    if(!mob || !utr) return alert("सर्व माहिती भरा!");
-
-    db.ref("CoinRequests").push({
-        user: currentUser,
-        mobile: mob,
-        utr: utr,
-        status: "Pending",
-        time: new Date().toLocaleString()
-    }).then(() => {
-        alert("तुमची विनंती Admin कडे पाठवली आहे. लवकरच कॉइन्स ॲड होतील.");
-        goHome();
-    });
-}
-
-// MATCH LOGIC
-function checkMatchStatus() {
-    let sel = matchSelect; if(!sel.value) return;
-    let t1 = sel.options[sel.selectedIndex].getAttribute("data-t1");
-    let t2 = sel.options[sel.selectedIndex].getAttribute("data-t2");
-    imgT1.src = squad2026[t1].logo; imgT2.src = squad2026[t2].logo;
-    labelT1.innerText = t1; labelT2.innerText = t2;
-    activeMatchArea.classList.remove("hidden");
-    loadPlayers(sel.value, t1, t2);
-}
-
-function loadPlayers(mid, t1, t2) {
-    db.ref("Players/"+mid).once("value", snap => {
-        if(!snap.exists()) {
-            let up = {};
-            squad2026[t1].players.forEach((p, i) => up[`team1/p${i+1}`] = p);
-            squad2026[t2].players.forEach((p, i) => up[`team2/p${i+11}`] = p);
-            db.ref("Players/"+mid).update(up).then(() => renderDropdowns(mid));
-        } else renderDropdowns(mid);
-    });
-}
-
-function renderDropdowns(mid) {
-    db.ref(`Players/${mid}/team1`).once("value", s => { let h = ""; s.forEach(d => h += `<option value="${d.key}">${d.val()}</option>`); p1.innerHTML = h; });
-    db.ref(`Players/${mid}/team2`).once("value", s => { let h = ""; s.forEach(d => h += `<option value="${d.key}">${d.val()}</option>`); p2.innerHTML = h; });
-    refreshScore(mid);
-}
-
-function joinMatch() {
-    let mid = matchSelect.value;
-    let pairID = p1.value + "|" + p2.value;
-    let pairNames = p1.options[p1.selectedIndex].text + " & " + p2.options[p2.selectedIndex].text;
-
-    // --- CHECK FOR DUPLICATE JODI (STRICT) ---
-    db.ref("Selections/"+mid).once("value", snap => {
-        let isAlreadyPicked = false;
-        snap.forEach(child => {
-            if(child.val().user === currentUser && child.val().pairID === pairID) {
-                isAlreadyPicked = true;
-            }
-        });
-
-        if(isAlreadyPicked) {
-            alert("तुम्ही ही जोडी आधीच निवडली आहे! दुसरी जोडी निवडा.");
-            return;
+    db.ref("Users/"+id).once("value", s => {
+        if(isLogin) {
+            if(s.exists() && s.val().password === pass) proceedApp(id);
+            else alert("Invalid Login!");
+        } else {
+            if(s.exists()) alert("User already exists!");
+            else db.ref("Users/"+id).set({password:pass, coins:500}).then(()=> proceedApp(id));
         }
-
-        db.ref("Users/"+currentUser+"/coins").once("value", c => {
-            let bal = c.val() || 0;
-            if(bal < 200) return alert("पुरेशी कॉइन्स नाहीत! + वर क्लिक करून ॲड करा.");
-            db.ref("Users/"+currentUser+"/coins").set(bal - 200);
-            db.ref("Selections/"+mid).push({user: currentUser, pairID: pairID, pairNames: pairNames});
-            alert("जोडी यशस्वीरित्या लावली!");
-        });
     });
 }
 
-function refreshScore(mid) {
-    db.ref("Selections/"+mid).on("value", snap => {
-        db.ref("LiveScore/"+mid).on("value", sSnap => {
-            let runs = sSnap.val() || {}; let gHTML = ""; let mHTML = ""; let hasM = false;
-            snap.forEach(u => {
-                let d = u.val(); let ids = d.pairID.split("|");
-                let r1 = runs[ids[0]] || 0; let r2 = runs[ids[1]] || 0;
-                let row = `<div class="score-row"><div><b>${d.user}</b><br><small>${d.pairNames.split(" & ")[0]}(${r1}) + ${d.pairNames.split(" & ")[1]}(${r2})</small></div><div class="total-badge">${r1+r2}</div></div>`;
-                gHTML += row; if(d.user === currentUser) { mHTML += row; hasM = true; }
+function proceedApp(id) {
+    user = id; authSection.classList.add("hidden"); mainApp.classList.remove("hidden"); coinBox.classList.remove("hidden");
+    if(user === ADMIN_ID) adminBtn.classList.remove("hidden");
+    db.ref("Users/"+user+"/coins").on("value", s => balanceText.innerText = s.val()||0);
+    loadMatches();
+}
+
+// Match & Player Logic
+function loadMatches() {
+    db.ref("MatchList").on("value", s => {
+        let h = "<option value=''>-- Select Match --</option>";
+        s.forEach(m => h += `<option value="${m.key}">${m.val().name}</option>`);
+        matchSelect.innerHTML = h; targetMatch.innerHTML = h;
+    });
+}
+
+function loadMatchBoard() {
+    let mid = matchSelect.value; if(!mid) return;
+    playArea.classList.remove("hidden");
+    db.ref("Players/"+mid).on("value", s => {
+        let d = s.val(); if(!d) return;
+        let h1="", h2="";
+        for(let k in d.team1) h1 += `<option value="${k}">${d.team1[k]}</option>`;
+        for(let k in d.team2) h2 += `<option value="${k}">${d.team2[k]}</option>`;
+        p1.innerHTML = h1; p2.innerHTML = h2;
+    });
+    listenScores(mid);
+}
+
+function joinJodi() {
+    let mid = matchSelect.value;
+    let p1id = p1.value, p2id = p2.value;
+    let txt = p1.options[p1.selectedIndex].text + " + " + p2.options[p2.selectedIndex].text;
+
+    db.ref("Users/"+user+"/coins").once("value", c => {
+        let bal = c.val()||0; if(bal < 200) return alert("Low Coins!");
+        db.ref("Selections/"+mid).push({u: user, p1:p1id, p2:p2id, txt:txt});
+        db.ref("Users/"+user+"/coins").set(bal - 200);
+        alert("Jodi Joined!");
+    });
+}
+
+function listenScores(mid) {
+    db.ref("Selections/"+mid).on("value", sel => {
+        db.ref("LiveScore/"+mid).on("value", sc => {
+            let runs = sc.val()||{}; let h = "";
+            sel.forEach(item => {
+                let d = item.val(); let s1 = runs[d.p1]||0, s2 = runs[d.p2]||0;
+                h += `<div class="d-flex justify-content-between p-2 border-bottom">
+                    <div><b>${d.u.toUpperCase()}</b><br><small>${d.txt}</small></div>
+                    <div class="badge bg-primary fs-6 h-50 mt-2">${s1+s2}</div>
+                </div>`;
             });
-            joinList.innerHTML = gHTML || "<small>No entries</small>";
-            if(hasM) { myDashboard.classList.remove("hidden"); myList.innerHTML = mHTML; }
+            scoreBoard.innerHTML = h || "<p class='text-center p-3'>No Jodis yet</p>";
         });
     });
 }
 
-// ADMIN
-function updateUserCoins() {
-    let t = targetUser.value.toLowerCase().trim(); let a = parseInt(addAmount.value);
-    db.ref("Users/"+t+"/coins").once("value", s => {
-        db.ref("Users/"+t+"/coins").set((s.val()||0) + a).then(()=>alert("Coins Added!"));
+// --- MASTER ADMIN FUNCTIONS ---
+function addNewMatch() {
+    let mid = newMatchId.value.trim();
+    let t1 = team1Name.value.trim();
+    let t2 = team2Name.value.trim();
+    if(!mid || !t1 || !t2) return alert("Fill all match details!");
+
+    db.ref("MatchList/"+mid).set({name: t1+" vs "+t2, t1:t1, t2:t2});
+    alert("Match Created!"); newMatchId.value=""; team1Name.value=""; team2Name.value="";
+}
+
+function addPlayerToMatch() {
+    let mid = targetMatch.value;
+    let team = playerTeam.value;
+    let pName = playerName.value.trim();
+    if(!mid || !pName) return alert("Select match & enter name!");
+
+    let pid = "p" + Date.now();
+    db.ref(`Players/${mid}/${team}/${pid}`).set(pName).then(()=> {
+        playerName.value=""; alert("Player Added!");
     });
 }
+
 function loadAdminPlayers() {
-    let mid = runMatch.value; if(!mid) return;
-    db.ref("Players/"+mid).once("value", s => {
-        let h = ""; s.forEach(t => t.forEach(p => h += `<div class="d-flex justify-content-between p-1 border-bottom bg-white"><span>${p.val()}</span><button onclick="editSc('${mid}','${p.key}')" class="btn btn-sm btn-warning">Runs</button></div>`));
-        adminPlayerList.innerHTML = h;
+    let mid = matchSelect.value;
+    if(!mid) return adminPlayerList.innerHTML = "<p class='p-3'>Select match in main screen first!</p>";
+    db.ref("Players/"+mid).once("value", p => {
+        db.ref("LiveScore/"+mid).on("value", sc => {
+            let r = sc.val()||{}; let h = "";
+            p.forEach(team => {
+                h += `<div class="bg-dark text-white p-1 small ps-2">${team.key.toUpperCase()}</div>`;
+                team.forEach(player => {
+                    h += `<div class="d-flex justify-content-between p-1 border-bottom align-items-center bg-white">
+                        <span class="ps-2">${player.val()}</span>
+                        <input type="number" class="form-control form-control-sm w-25" value="${r[player.key]||0}" 
+                        onchange="db.ref('LiveScore/${mid}/${player.key}').set(parseInt(this.value))">
+                    </div>`;
+                });
+            });
+            adminPlayerList.innerHTML = h;
+        });
     });
 }
-function editSc(m,id){ let s=prompt("Runs:"); if(s) db.ref(`LiveScore/${m}/${id}`).set(parseInt(s)); }
-function goHome() { coinFormSection.classList.add("hidden"); adminSection.classList.add("hidden"); homeSection.classList.remove("hidden"); }
-function showAdmin() { homeSection.classList.add("hidden"); adminSection.classList.remove("hidden"); }
-function logout() { localStorage.removeItem("jodiUser"); location.reload(); }
+
+function showAdmin() { mainApp.classList.add("hidden"); adminPanel.classList.remove("hidden"); loadAdminPlayers(); }
+function closeAdmin() { adminPanel.classList.add("hidden"); mainApp.classList.remove("hidden"); }
 </script>
 </body>
 </html>
