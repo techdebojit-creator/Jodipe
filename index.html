@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JODI11 PRO - Cricket</title>
+    <title>JODI11 PRO - Santosh Bagul</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -16,7 +16,6 @@
         .hidden { display: none !important; }
         .btn-primary { background: var(--primary); border: none; }
         .admin-badge { background: #ffebee; color: #c62828; font-weight: bold; border: 1px solid #ef9a9a; }
-        .rules-list p { margin-bottom: 8px; line-height: 1.4; }
         .winner-anim { background: #e8f5e9; border: 2px solid #28a745 !important; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
     </style>
@@ -41,12 +40,10 @@
         <h4 class="text-center fw-bold mb-4" id="authTitle">Login</h4>
         <input id="userId" class="form-control mb-3" placeholder="Username">
         <input id="userPass" type="password" class="form-control mb-3" placeholder="Password">
-        
         <div id="loginGroup">
             <button onclick="handleAuth(true)" class="btn btn-primary w-100 fw-bold mb-3">LOG IN</button>
             <p class="text-center small">Account नाही? <a href="#" onclick="toggleAuth(false)">Sign Up करा</a></p>
         </div>
-
         <div id="signupGroup" class="hidden">
             <button onclick="handleAuth(false)" class="btn btn-success w-100 fw-bold mb-3">CREATE ACCOUNT</button>
             <p class="text-center small">Account आहे? <a href="#" onclick="toggleAuth(true)">Login करा</a></p>
@@ -58,7 +55,7 @@
         <div id="coinReqArea" class="card p-3 mb-3 border-warning hidden">
             <h6 class="fw-bold small">Add Coins (Max: 1000)</h6>
             <div class="input-group input-group-sm">
-                <input id="reqAmt" type="number" class="form-control" placeholder="रक्कम टाका">
+                <input id="reqAmt" type="number" class="form-control" placeholder="रक्कम">
                 <button onclick="sendCoinRequest()" class="btn btn-warning fw-bold">Send</button>
             </div>
         </div>
@@ -85,43 +82,26 @@
             <p class="small text-muted mt-2 mb-0" id="winAmountText"></p>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
-            <h6 class="fw-bold m-0 text-dark">📊 LIVE STANDINGS</h6>
-            <button onclick="refreshScores()" class="btn btn-sm btn-outline-primary px-3" style="border-radius: 20px; font-size: 11px;">🔄 Refresh</button>
-        </div>
-        <div id="scoreBoard" class="card p-2 mb-4" style="min-height: 80px;"></div>
+        <h6 class="fw-bold mb-2 mt-3">📊 LIVE STANDINGS</h6>
+        <div id="scoreBoard" class="card p-2 mb-4"></div>
 
-        <div class="card p-3 mb-3 border-0 shadow-sm">
-            <h6 class="fw-bold text-danger text-uppercase mb-3">📜 नियम आणि अटी</h6>
-            <div class="rules-list text-muted" style="font-size: 12px;">
-                <p><b>१.</b> मॅच सुरू झाल्यावर जोडी लावता येणार नाही.</p>
-                <p><b>२.</b> प्रत्येक जोडीत २ खेळाडू असतील (T1, T2 किंवा Mix).</p>
-                <p><b>३.</b> एन्ट्री फी २०० कॉइन्स आहे (रिफंड नाही).</p>
-                <p><b>४.</b> दोन्ही खेळाडूंच्या एकूण रन्सवर विनर ठरवला जाईल.</p>
-                <p><b>५.</b> एका वेळी जास्तीत जास्त १००० कॉइन्सची रिक्वेस्ट पाठवता येईल.</p>
-                <p><b>६.</b> विनरच्या एकूण पूल मधून १०% ऍडमिन फी कापली जाईल.</p>
-            </div>
-        </div>
-
-        <div class="card p-3 mb-3 border-0 shadow-sm" style="background: #e3f2fd;">
-            <h6 class="fw-bold text-primary text-uppercase small">ℹ️ About JODI11 PRO</h6>
-            <p class="mb-0 text-muted" style="font-size: 12px;">संतोष बागुल यांचे अधिकृत क्रिकेट फॅन्टसी प्लॅटफॉर्म. विश्वासार्ह आणि जलद सर्व्हिस.</p>
-        </div>
-
-        <div class="card p-3 border-0 shadow-sm text-center">
+        <div class="card p-3 mb-3 border-0 shadow-sm text-center">
             <h6 class="fw-bold text-primary text-uppercase small">📞 Contact Support</h6>
-            <p class="small text-muted mb-3">संपर्क: <b>9579476353</b></p>
-            <a href="https://wa.me/919579476353" class="btn btn-sm btn-success w-100 fw-bold mb-2">WhatsApp Support</a>
-            <small class="text-muted mt-2 d-block">Jodi11 Pro V. 1.14.17 Developed & Managed by ❤️ <b>SANTOSH BAGUL</b></small>
+            <p class="small text-muted mb-2">संपर्क: <b>9579476353</b></p>
+            <a href="https://wa.me/919579476353" class="btn btn-sm btn-success w-100 fw-bold">WhatsApp Support</a>
+            <small class="text-muted mt-3 d-block">Jodi11 Pro v 1.14.18 Developed & Managed by ❤️ <b>SANTOSH BAGUL</b></small>
         </div>
     </div>
 
     <div id="adminPanel" class="hidden">
         <div class="card p-2 admin-badge mb-3 text-center">ADMIN PANEL</div>
-        <div class="card p-3 mb-3 border-success"><p class="fw-bold small text-success">💰 COIN REQUESTS</p><div id="adminReqListArea"></div></div>
+        <div class="card p-3 mb-3 border-success">
+            <p class="fw-bold small text-success">💰 COIN REQUESTS</p>
+            <div id="adminReqListArea"></div>
+        </div>
         
         <div class="card p-3 mb-3 border-primary">
-            <p class="fw-bold small text-primary">1. ADD MATCH</p>
+            <p class="fw-bold small">1. ADD MATCH</p>
             <input id="newMatchId" class="form-control form-control-sm mb-1" placeholder="Match ID">
             <input id="team1Name" class="form-control form-control-sm mb-1" placeholder="Team 1">
             <input id="team2Name" class="form-control form-control-sm mb-2" placeholder="Team 2">
@@ -129,7 +109,7 @@
         </div>
 
         <div class="card p-3 mb-3 border-success">
-            <p class="fw-bold small text-success">2. ADD PLAYER</p>
+            <p class="fw-bold small">2. ADD PLAYER</p>
             <select id="targetMatch" class="form-select form-select-sm mb-1"></select>
             <select id="playerTeam" class="form-select form-select-sm mb-1"><option value="team1">Team 1</option><option value="team2">Team 2</option></select>
             <input id="playerName" class="form-control form-control-sm mb-2" placeholder="Player Name">
@@ -137,14 +117,14 @@
         </div>
 
         <div class="card p-3 mb-3 border-warning">
-            <p class="fw-bold small">3. LIVE UPDATER</p>
+            <p class="fw-bold small">3. LIVE RUN UPDATER</p>
             <div id="adminPlayerList" class="bg-white border rounded p-2" style="max-height: 200px; overflow-y: auto;"></div>
         </div>
 
         <div class="card p-3 mb-3 border-primary">
             <p class="fw-bold small">4. DECLARE WINNER</p>
             <select id="winnerSelect" class="form-select form-select-sm mb-2"></select>
-            <button onclick="declareWinner()" class="btn btn-primary btn-sm w-100">WINNER & PAYOUT (10% OFF)</button>
+            <button onclick="declareWinner()" class="btn btn-primary btn-sm w-100">PAYOUT (10% OFF)</button>
         </div>
         <button onclick="closeAdmin()" class="btn btn-secondary w-100 mb-5">BACK</button>
     </div>
@@ -163,10 +143,10 @@ function toggleAuth(l) { document.getElementById("authTitle").innerText = l?"Log
 function handleAuth(l) {
     let id = document.getElementById("userId").value.toLowerCase().trim();
     let p = document.getElementById("userPass").value.trim();
-    if(!id || !p) return alert("सर्व माहिती भरा!");
+    if(!id || !p) return alert("माहिती भरा!");
     db.ref("Users/"+id).once("value", s => {
-        if(l) { if(s.exists() && s.val().password === p) proceedApp(id); else alert("चुकीचा माहिती!"); }
-        else { if(s.exists()) return alert("हा युजर आधीच आहे!"); db.ref("Users/"+id).set({password:p, coins:500}).then(()=>proceedApp(id)); }
+        if(l) { if(s.exists() && s.val().password === p) proceedApp(id); else alert("चुकीची माहिती!"); }
+        else { if(s.exists()) return alert("युजर आधीच आहे!"); db.ref("Users/"+id).set({password:p, coins:500}).then(()=>proceedApp(id)); }
     });
 }
 
@@ -184,17 +164,9 @@ function trackOnlineStatus(id) {
     db.ref('status').on('value', snap => { document.getElementById('onlineCount').innerText = snap.numChildren()||0; });
 }
 
-function sendCoinRequest() {
-    let a = parseInt(document.getElementById("reqAmt").value);
-    if(!a || a <= 0 || a > 1000) return alert("मर्यादा १००० कॉइन्स!");
-    if(confirm(a+" कॉइन्ससाठी विनंती पाठवायची?")) {
-        db.ref("CoinRequests").push({u:user, amount:a, time:Date.now()}).then(()=>{alert("विनंती पाठवली!"); document.getElementById("reqAmt").value="";});
-    }
-}
-
 function loadMatches() {
     db.ref("MatchList").on("value", s => {
-        let h = "<option value=''>-- निवडा --</option>";
+        let h = "<option value=''>-- मॅच निवडा --</option>";
         s.forEach(m => { h += `<option value="${m.key}">${m.val().name}</option>`; });
         document.getElementById("matchSelect").innerHTML = h; document.getElementById("targetMatch").innerHTML = h;
     });
@@ -218,56 +190,35 @@ function loadMatchBoard() {
     });
 }
 
-function joinJodi() {
-    let m = document.getElementById("matchSelect").value, p1 = document.getElementById("p1").value, p2 = document.getElementById("p2").value;
-    if(!p1 || !p2 || p1 === p2) return alert("दोन वेगळे खेळाडू निवडा!");
-    db.ref("Users/"+user+"/coins").once("value", s => {
-        let b = s.val()||0; if(b < 200) return alert("कमी बॅलेन्स!");
-        let t = document.getElementById("p1").options[document.getElementById("p1").selectedIndex].text+" + "+document.getElementById("p2").options[document.getElementById("p2").selectedIndex].text;
-        db.ref("Selections/"+m).push({u:user, p1:p1, p2:p2, txt:t}).then(()=>{ db.ref("Users/"+user+"/coins").set(b-200); alert("जोडी लावली!"); });
-    });
-}
-
 function listenScores(m) {
-    db.ref("Selections/" + m).on("value", sel => {
-        db.ref("LiveScore/" + m).on("value", sc => {
-            let r = sc.val() || {}, h = "";
-            
+    db.ref("Selections/"+m).on("value", sel => {
+        db.ref("LiveScore/"+m).on("value", sc => {
+            let r = sc.val()||{}, h = "";
             sel.forEach(i => {
-                let d = i.val();
-                let s1 = r[d.p1] || 0; // पहिल्या प्लेयरचे रन्स
-                let s2 = r[d.p2] || 0; // दुसऱ्या प्लेयरचे रन्स
-                let tot = s1 + s2;     // एकूण बेरीज
-
-                // खेळाडूंची नावे वेगळी करणे
-                let names = d.txt.split(" + ");
-                let n1 = names[0] || "Player 1";
-                let n2 = names[1] || "Player 2";
-
+                let d = i.val(), s1 = r[d.p1]||0, s2 = r[d.p2]||0, tot = s1+s2;
+                let ns = d.txt.split(" + ");
                 h += `
                 <div class="card mb-2 p-2 ${d.u === user ? 'bg-warning-subtle border-start border-warning border-3' : 'border-start border-primary border-3'}">
                     <div class="d-flex justify-content-between align-items-center">
                         <div style="flex: 1;">
-                            <b class="text-uppercase" style="font-size: 13px;">${d.u}</b>
-                            <div class="d-flex gap-3 mt-1" style="font-size: 11px; color: #555;">
-                                <span>${n1}: <b>${s1}</b></span>
-                                <span>${n2}: <b>${s2}</b></span>
+                            <b>${d.u.toUpperCase()}</b>
+                            <div class="d-flex gap-3" style="font-size: 11px;">
+                                <span>${ns[0]}: <b>${s1}</b></span>
+                                <span>${ns[1]}: <b>${s2}</b></span>
                             </div>
                         </div>
-                        <div class="text-center bg-white border rounded px-2 py-1" style="min-width: 60px;">
-                            <small class="d-block text-muted" style="font-size: 9px; font-weight: bold;">TOTAL</small>
+                        <div class="text-center bg-white border rounded px-2" style="min-width: 50px;">
+                            <small class="d-block text-muted" style="font-size: 9px;">TOTAL</small>
                             <span class="fw-bold fs-5 text-primary">${tot}</span>
                         </div>
                     </div>
                 </div>`;
             });
-            document.getElementById("scoreBoard").innerHTML = h || "<p class='text-center p-3 text-muted'>अजून जोड्या लावल्या नाहीत.</p>";
+            document.getElementById("scoreBoard").innerHTML = h || "No Jodis yet";
         });
     });
 }
 
-
-// ADMIN PANEL LOGIC
 function showAdmin() { document.getElementById("mainApp").classList.add("hidden"); document.getElementById("adminPanel").classList.remove("hidden"); listenCoinRequests(); loadAdminPlayers(); }
 function closeAdmin() { document.getElementById("adminPanel").classList.add("hidden"); document.getElementById("mainApp").classList.remove("hidden"); }
 
@@ -324,9 +275,23 @@ function declareWinner() {
     });
 }
 
+function joinJodi() {
+    let m = document.getElementById("matchSelect").value, p1 = document.getElementById("p1").value, p2 = document.getElementById("p2").value;
+    if(!p1 || !p2 || p1 === p2) return alert("दोन वेगळे खेळाडू निवडा!");
+    db.ref("Users/"+user+"/coins").once("value", s => {
+        let b = s.val()||0; if(b < 200) return alert("कमी बॅलेन्स!");
+        let t = document.getElementById("p1").options[document.getElementById("p1").selectedIndex].text+" + "+document.getElementById("p2").options[document.getElementById("p2").selectedIndex].text;
+        db.ref("Selections/"+m).push({u:user, p1:p1, p2:p2, txt:t}).then(()=>{ db.ref("Users/"+user+"/coins").set(b-200); alert("जोडी लावली!"); });
+    });
+}
+
 function logout() { if(confirm("लॉगआउट?")) { localStorage.clear(); location.reload(); } }
 function toggleCoinReq() { document.getElementById("coinReqArea").classList.toggle("hidden"); }
-function refreshScores() { location.reload(); }
+function sendCoinRequest() {
+    let a = parseInt(document.getElementById("reqAmt").value);
+    if(!a || a <= 0 || a > 1000) return alert("मर्यादा १०००!");
+    db.ref("CoinRequests").push({u:user, amount:a}).then(()=>{alert("Done!"); document.getElementById("reqAmt").value="";});
+}
 </script>
 </body>
 </html>
