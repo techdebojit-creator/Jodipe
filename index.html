@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.14.6</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -38,6 +38,18 @@
         <input id="userPass" type="password" class="form-control mb-3" placeholder="Password">
         <div id="loginGroup">
             <button onclick="handleAuth(true)" class="btn btn-primary w-100 fw-bold mb-3">LOG IN</button>
+            <p class="text-center small mt-2">
+    <a href="#" onclick="toggleForget(true)" class="text-danger text-decoration-none">Password विसरलात?</a>
+</p>
+
+<div id="forgetGroup" class="hidden">
+    <h6 class="fw-bold text-center mb-3">🔒 Reset Password Request</h6>
+    <input id="forgetUser" class="form-control mb-2" placeholder="तुमचा Username">
+    <input id="newPassReq" class="form-control mb-3" placeholder="नवीन हवा असलेला पासवर्ड">
+    <button onclick="sendResetRequest()" class="btn btn-danger w-100 fw-bold mb-2">REQUEST ADMIN</button>
+    <button onclick="toggleForget(false)" class="btn btn-light w-100 btn-sm">Back to Login</button>
+</div>
+
             <p class="text-center small">Account nahi? <a href="#" onclick="toggleAuth(false)">Sign Up</a></p>
         </div>
         <div id="signupGroup" class="hidden">
@@ -148,7 +160,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.6 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.7 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -166,6 +178,12 @@
                 <p class="text-center text-muted small">No pending requests.</p>
             </div>
         </div>
+        <div class="card p-3 mb-3 border-danger shadow-sm">
+    <p class="fw-bold small mb-2 text-danger">🔑 PASSWORD RESET REQUESTS</p>
+    <div id="adminResetList">
+        <p class="text-center text-muted small">No pending resets.</p>
+    </div>
+</div>
 
         <div class="card p-3 mb-3 border-primary">
             <p class="fw-bold small mb-2 text-primary">1. Add New IPL Match</p>
@@ -266,6 +284,56 @@ function handleAuth(isLogin) {
         }
     });
 }
+            function toggleForget(show) {
+    document.getElementById("loginGroup").classList.toggle("hidden", show);
+    document.getElementById("signupGroup").classList.add("hidden");
+    document.getElementById("forgetGroup").classList.toggle("hidden", !show);
+}
+
+function sendResetRequest() {
+    let id = document.getElementById("forgetUser").value.toLowerCase().trim();
+    let newPass = document.getElementById("newPassReq").value.trim();
+
+    if(!id || !newPass) return alert("Username आणि नवीन पासवर्ड टाका!");
+
+    // Check kara ki user exist aahe ka
+    db.ref("Users/" + id).once("value", s => {
+        if(!s.exists()) return alert("हा युजर रेकॉर्डमध्ये नाही!");
+
+        db.ref("ResetRequests/" + id).set({
+            requestedPass: newPass,
+            time: Date.now()
+        }).then(() => {
+            alert("तुमची विनंती Admin कडे पाठवली आहे. लवकरच तुमचा पासवर्ड बदलला जाईल.");
+            toggleForget(false);
+        });
+    });
+}
+  function listenResets() {
+    db.ref("ResetRequests").on("value", s => {
+        let h = "";
+        if(!s.exists()) {
+            h = "<p class='text-center text-muted small'>No requests.</p>";
+        } else {
+            s.forEach(req => {
+                let d = req.val();
+                h += `<div class="d-flex justify-content-between align-items-center border-bottom p-2 mb-2 bg-white rounded">
+                        <div><b>${req.key}</b><br><small>New: ${d.requestedPass}</small></div>
+                        <button onclick="approvePassword('${req.key}', '${d.requestedPass}')" class="btn btn-sm btn-danger">Change</button>
+                      </div>`;
+            });
+        }
+        document.getElementById("adminResetList").innerHTML = h;
+    });
+}
+
+function approvePassword(targetUser, newPass) {
+    db.ref("Users/" + targetUser + "/password").set(newPass).then(() => {
+        db.ref("ResetRequests/" + targetUser).remove();
+        alert(targetUser + " चा पासवर्ड यशस्वीरित्या बदलला!");
+    });
+}
+
   function proceedApp(id) {
     user = id; 
     localStorage.setItem("jodiUser", id); // ID phone chya memory madhe save kela
