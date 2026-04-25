@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.06</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.07</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -177,22 +177,19 @@ function handleAuth(isLogin) {
 }
 
 function proceedApp(id) {
-    user = id;
-    
+function proceedApp(id) {
+    user = id; 
+    document.getElementById("authSection").classList.add("hidden"); 
+    document.getElementById("mainApp").classList.remove("hidden"); 
+    document.getElementById("coinBox").classList.remove("hidden");
 
-    document.getElementById("authSection").classList.add("hidden");
-    document.getElementById("mainApp").classList.remove("hidden");
-    document.getElementById("navActions").classList.remove("hidden");
-    
-    document.getElementById("profileName").innerText = user.toUpperCase();
-    document.getElementById("profileInitial").innerText = user.charAt(0).toUpperCase();
+    if(user === ADMIN_ID) {
+        document.getElementById("adminBtn").classList.remove("hidden");
+    }
 
-    if(user === ADMIN_ID) document.getElementById("adminBtn").classList.remove("hidden");
-    
-    db.ref("Users/"+user+"/coins").on("value", s => {
-        let bal = s.val() || 0;
-        document.getElementById("profileBalance").innerText = bal;
-        document.getElementById("balanceText").innerText = bal; // Navbar sathi
+    // Live Balance Update
+    db.ref("Users/" + user + "/coins").on("value", s => {
+        document.getElementById("balanceText").innerText = s.val() || 0;
     });
 
     loadMatches();
