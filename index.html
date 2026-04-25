@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.10</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.11</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -413,8 +413,12 @@ function loadAdminPlayers() {
         });
     });
 }
+// Script tag sampnya aadhi yithe paste kara
+function logout() {
+    localStorage.removeItem("jodiUser"); // Memory madhun user ID kadhun taka
+    location.reload(); // App la refresh kara jyamule login screen disel
+}
             
-
 </script>
 
 </body>
