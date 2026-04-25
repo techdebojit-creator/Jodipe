@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.14.4</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.14.5</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -100,7 +100,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.4 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.5 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -204,6 +204,12 @@ function handleAuth(isLogin) {
             if(s.exists()) {
                 alert("हा युजर आधीच आहे!");
             } else {
+                // 👇 NAVIN SECURITY CHECK YITHE ADD KELA AAHE 👇
+                let passPattern = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/;
+                if(!passPattern.test(pass)) {
+                    return alert("❌ सुरक्षा कारणामुळे: पासवर्ड किमान ६ अक्षरी असावा आणि त्यात किमान एक नंबर व एक चिन्ह (@, #, $, %) असावे!");
+                }
+                // 👆 SECURITY CHECK SAMPALA 👆
                 db.ref("Users/" + id).set({ password: pass, coins: 500 }).then(() => {
                     alert("Registration झाले!");
                     proceedApp(id);
