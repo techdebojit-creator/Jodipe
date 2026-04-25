@@ -79,6 +79,13 @@
                 <button onclick="joinJodi()" class="btn btn-success w-100 fw-bold">JOIN JODI (200 Coins)</button>
             </div>
         </div>
+<div id="winnerBox" class="card p-3 mb-3 border-success shadow hidden" style="background: #e8f5e9; border: 2px solid #28a745 !important;">
+    <div class="text-center">
+        <h4 class="mb-1">🏆 Winner Announced 🏆</h4>
+        <h5 class="fw-bold text-success m-0" id="winnerNameText">---</h5>
+        <p class="small text-muted mt-2 mb-0" id="winAmountText"></p>
+    </div>
+</div>
 
         <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
     <h6 class="fw-bold m-0 text-dark">📊 LIVE STANDINGS</h6>
@@ -165,7 +172,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.10 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.11 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -183,7 +190,7 @@
                 <p class="text-center text-muted small">No pending requests.</p>
             </div>
         </div>
-        <div class="card p-3 mb-3 border-danger shadow-sm">
+ optionion    <div class="card p-3 mb-3 border-danger shadow-sm">
     <p class="fw-bold small mb-2 text-danger">🔑 PASSWORD RESET REQUESTS</p>
     <div id="adminResetList">
         <p class="text-center text-muted small">No pending resets.</p>
@@ -228,6 +235,13 @@
             <p class="fw-bold small mb-2">2. Live Run Updater</p>
             <div id="adminPlayerList" class="bg-white border rounded" style="max-height: 250px; overflow-y: auto;"></div>
         </div>
+<div class="card p-3 mb-3 border-primary shadow-sm">
+    <p class="fw-bold small mb-2 text-primary text-uppercase">🏆 Declare Match Winner</p>
+    <label class="small fw-bold text-muted">Select Winning User</label>
+    <select id="winnerSelect" class="form-select form-select-sm mb-3">
+        </select>
+    <button onclick="declareWinner()" class="btn btn-primary btn-sm w-100 fw-bold">DECLARE & DISTRIBUTE COINS</button>
+</div>
 
         <button onclick="closeAdmin()" class="btn btn-secondary w-100 mb-5">Back to Home</button>
     </div>
@@ -403,6 +417,19 @@ function loadMatchBoard() {
         document.getElementById("p2").innerHTML = allPlayersHtml;
     });
     listenScores(mid);
+    // loadMatchBoard च्या शेवटी हे टाका
+db.ref("MatchList/" + mid + "/winner").on("value", s => {
+    let winData = s.val();
+    let wBox = document.getElementById("winnerBox");
+    if(winData) {
+        wBox.classList.remove("hidden");
+        document.getElementById("winnerNameText").innerText = winData.user.toUpperCase();
+        document.getElementById("winAmountText").innerText = "अभिनंदन! विनरला " + winData.amount + " कॉइन्स मिळाले आहेत.";
+    } else {
+        wBox.classList.add("hidden");
+    }
+});
+
 }
 
 
@@ -572,7 +599,9 @@ function showAdmin() {
     document.getElementById("adminPanel").classList.remove("hidden"); 
     loadAdminPlayers(); 
     listenCoinRequests(); 
+    loadWinnerList(); // <--- He add kara
 }
+
 
 function closeAdmin() { 
     document.getElementById("adminPanel").classList.add("hidden"); 
@@ -599,6 +628,57 @@ function loadAdminPlayers() {
         });
     });
 }
+// Admin panel ughdalyavar winner list bharne
+function loadWinnerList() {
+    let mid = document.getElementById("matchSelect").value;
+    if(!mid) return;
+    
+    db.ref("Selections/" + mid).once("value", s => {
+        let h = "<option value=''>-- Winner निवडा --</option>";
+        let seenUsers = new Set();
+        s.forEach(sel => {
+            let u = sel.val().u;
+            if(!seenUsers.has(u)) {
+                h += `<option value="${u}">${u.toUpperCase()}</option>`;
+                seenUsers.add(u);
+            }
+        });
+        document.getElementById("winnerSelect").innerHTML = h;
+    });
+}
+
+function declareWinner() {
+    let mid = document.getElementById("matchSelect").value;
+    let winUser = document.getElementById("winnerSelect").value;
+
+    if(!mid || !winUser) return alert("कृपया मॅच आणि विनर निवडा!");
+    if(!confirm("तुम्ही " + winUser + " ला विनर घोषित करत आहात. खात्री आहे?")) return;
+
+    db.ref("Selections/" + mid).once("value", s => {
+        let totalJodis = s.numChildren();
+        let totalPool = totalJodis * 200;
+        let deduction = totalPool * 0.10;
+        let winningAmount = totalPool - deduction;
+
+        db.ref("Users/" + winUser + "/coins").once("value", uSnap => {
+            let currentCoins = uSnap.val() || 0;
+            let finalCoins = currentCoins + winningAmount;
+
+            // १. विनरला कॉइन्स देणे
+            db.ref("Users/" + winUser + "/coins").set(finalCoins);
+            
+            // २. मॅच रेकॉर्डमध्ये विनरचे नाव आणि रक्कम सेव्ह करणे (युजरला दिसण्यासाठी)
+            db.ref("MatchList/" + mid + "/winner").set({
+                user: winUser,
+                amount: winningAmount
+            }).then(() => {
+                alert("🏆 विनर घोषित आणि कॉइन्स जमा झाले!");
+            });
+        });
+    });
+}
+
+
 // Script tag sampnya aadhi yithe paste kara
 function logout() {
     localStorage.removeItem("jodiUser"); // Memory madhun user ID kadhun taka
