@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JODI11 PRO - Santosh Bagul</title>
+    <title>JODI11 PRO - Cricket</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -112,7 +112,7 @@
             <h6 class="fw-bold text-primary text-uppercase small">📞 Contact Support</h6>
             <p class="small text-muted mb-3">संपर्क: <b>9579476353</b></p>
             <a href="https://wa.me/919579476353" class="btn btn-sm btn-success w-100 fw-bold mb-2">WhatsApp Support</a>
-            <small class="text-muted mt-2 d-block">V. 1.14.16 Developed & Managed by ❤️ <b>SANTOSH BAGUL</b></small>
+            <small class="text-muted mt-2 d-block">Jodi11 Pro V. 1.14.17 Developed & Managed by ❤️ <b>SANTOSH BAGUL</b></small>
         </div>
     </div>
 
@@ -229,22 +229,43 @@ function joinJodi() {
 }
 
 function listenScores(m) {
-    db.ref("Selections/"+m).on("value", sel => {
-        db.ref("LiveScore/"+m).on("value", sc => {
-            let r = sc.val()||{}, h = "";
+    db.ref("Selections/" + m).on("value", sel => {
+        db.ref("LiveScore/" + m).on("value", sc => {
+            let r = sc.val() || {}, h = "";
+            
             sel.forEach(i => {
-                let d = i.val(), tot = (r[d.p1]||0)+(r[d.p2]||0);
-                h += `<div class="card mb-2 p-2 ${d.u===user?'bg-warning-subtle border-start border-warning border-3':''}">
+                let d = i.val();
+                let s1 = r[d.p1] || 0; // पहिल्या प्लेयरचे रन्स
+                let s2 = r[d.p2] || 0; // दुसऱ्या प्लेयरचे रन्स
+                let tot = s1 + s2;     // एकूण बेरीज
+
+                // खेळाडूंची नावे वेगळी करणे
+                let names = d.txt.split(" + ");
+                let n1 = names[0] || "Player 1";
+                let n2 = names[1] || "Player 2";
+
+                h += `
+                <div class="card mb-2 p-2 ${d.u === user ? 'bg-warning-subtle border-start border-warning border-3' : 'border-start border-primary border-3'}">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div><b>${d.u.toUpperCase()}</b><br><small class="text-muted">${d.txt}</small></div>
-                        <div class="fw-bold fs-5 text-primary">${tot}</div>
+                        <div style="flex: 1;">
+                            <b class="text-uppercase" style="font-size: 13px;">${d.u}</b>
+                            <div class="d-flex gap-3 mt-1" style="font-size: 11px; color: #555;">
+                                <span>${n1}: <b>${s1}</b></span>
+                                <span>${n2}: <b>${s2}</b></span>
+                            </div>
+                        </div>
+                        <div class="text-center bg-white border rounded px-2 py-1" style="min-width: 60px;">
+                            <small class="d-block text-muted" style="font-size: 9px; font-weight: bold;">TOTAL</small>
+                            <span class="fw-bold fs-5 text-primary">${tot}</span>
+                        </div>
                     </div>
                 </div>`;
             });
-            document.getElementById("scoreBoard").innerHTML = h || "No Jodis yet";
+            document.getElementById("scoreBoard").innerHTML = h || "<p class='text-center p-3 text-muted'>अजून जोड्या लावल्या नाहीत.</p>";
         });
     });
 }
+
 
 // ADMIN PANEL LOGIC
 function showAdmin() { document.getElementById("mainApp").classList.add("hidden"); document.getElementById("adminPanel").classList.remove("hidden"); listenCoinRequests(); loadAdminPlayers(); }
