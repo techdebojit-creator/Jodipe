@@ -24,7 +24,10 @@
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
         <h5 class="m-0 fw-bold">🏏 JODI11 PRO</h5>
-        <div id="coinBox" class="hidden d-flex align-items-center gap-2">
+        <div class="badge bg-success shadow-sm ms-2" id="onlineCounterBox" style="font-size: 11px;">
+    🟢 Online: <span id="onlineCount">0</span>
+</div>
+   <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
         </div>
@@ -43,7 +46,7 @@
 </p>
 
 <div id="forgetGroup" class="hidden">
-    <h6 class="fw-bold text-center mb-3">🔒 Reset Password Request</h6>
+    <h6 class="fw-bold text-center mb-3">🔒 Reset PassworRequestst</h6>
     <input id="forgetUser" class="form-control mb-2" placeholder="तुमचा Username">
     <input id="newPassReq" class="form-control mb-3" placeholder="नवीन हवा असलेला पासवर्ड">
     <button onclick="sendResetRequest()" class="btn btn-danger w-100 fw-bold mb-2">REQUEST ADMIN</button>
@@ -172,7 +175,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.12 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.13 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -329,8 +332,31 @@ function proceedApp(id) {
     });
 
     loadMatches();
+    trackOnlineStatus(id);
 }
 
+function trackOnlineStatus(userId) {
+    // १. युजरच्या ऑनलाइन स्टेटसचा पाथ (Firebase Path)
+    let userStatusRef = db.ref('status/' + userId);
+
+    // २. Firebase कडून कनेक्शन स्टेटस मिळवा
+    db.ref('.info/connected').on('value', (snapshot) => {
+        if (snapshot.val() === false) return;
+
+        // ३. जर युजरने ॲप बंद केले किंवा इंटरनेट गेले, तर 'offline' करा
+        // 'onDisconnect' हे फंक्शन आपोआप काम करते
+        userStatusRef.onDisconnect().remove().then(() => {
+            // ४. युजर सध्या ऑनलाइन असेल तर 'online' सेट करा
+            userStatusRef.set(true);
+        });
+    });
+
+    // ५. एकूण किती लोक ऑनलाइन आहेत ते मोजण्यासाठी (Listener)
+    db.ref('status').on('value', (snapshot) => {
+        let count = snapshot.numChildren() || 0;
+        document.getElementById('onlineCount').innerText = count;
+    });
+}
 
 // --- WALLET LOGIC ---
 function toggleCoinReq() { 
