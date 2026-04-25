@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.14</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.14.2</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -100,7 +100,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Developed & Managed by v.1.14.1</small><br>
+                <small class="text-muted">Developed & Managed by v.1.14.2</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -274,7 +274,8 @@ function loadMatches() {
     db.ref("MatchList").on("value", s => {
         let h = "<option value=''>-- Select Match --</option>";
         s.forEach(m => {
-            h += `<option value="${m.key}">${m.val().name}</option>`;
+            let d = m.val();
+            h += `<option value="${m.key}">${m.val().name}(${d.date} | ${d.time})</option>`;
         });
         // Match selection doghi kade update kara
         document.getElementById("matchSelect").innerHTML = h; // Main UI
@@ -313,7 +314,18 @@ function joinJodi() {
     let mid = document.getElementById("matchSelect").value;
     let p1id = document.getElementById("p1").value;
     let p2id = document.getElementById("p2").value;
+    if (!mid) return alert("मॅच निवडा!");
+    db.ref("MatchList/" + mid).once("value", matchSnap => {
+        let matchData = matchSnap.val();
+        
+        // Match chi Date aani Time ekatra kara (उदा. 2026-04-25T19:30:00)
+        let matchStart = new Date(matchData.date + "T" + matchData.time);
+        let now = new Date();
 
+        // Jar aata chi vel match suru honyachya velenantarchi asel tar...
+        if (now >= matchStart) {
+            return alert("❌ वेळ संपली आहे! मॅच सुरू झाली असल्यामुळे आता जोडी लावता येणार नाही.");
+        }
     // 1. Validation: Player nivdle aahet ka aani te vegle aahet ka?
     if (!p1id || !p2id) {
         return alert("❌ कृपया दोन्ही प्लेयर्स निवडा!");
