@@ -129,13 +129,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-// Script suru hota kshani check kara
-window.onload = function() {
-    let savedUser = localStorage.getItem("jodiUser");
-    if(savedUser) {
-        proceedApp(savedUser); // Jar ID sapdla tar direct app ughda
-    }
-}
+
 let user = "";
 const ADMIN_ID = "santoshbagul";
 
@@ -184,8 +178,7 @@ function handleAuth(isLogin) {
 
 function proceedApp(id) {
     user = id;
-    // User ID phone chya memory madhe save kara
-    localStorage.setItem("jodiUser", id); 
+    
 
     document.getElementById("authSection").classList.add("hidden");
     document.getElementById("mainApp").classList.remove("hidden");
@@ -384,10 +377,7 @@ function loadAdminPlayers() {
         });
     });
 }
-            function logout() {
-    localStorage.removeItem("jodiUser"); // Memory saaf kara
-    location.reload(); // App refresh kara
-}
+            
 
 </script>
 
