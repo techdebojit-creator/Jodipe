@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.12</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.13</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -284,23 +284,53 @@ function joinJodi() {
     let p1id = document.getElementById("p1").value;
     let p2id = document.getElementById("p2").value;
 
-    // Validation: Donhi player vegle pahijet
-    if (p1id === p2id) {
-        return alert("❌ कृपया दोन वेगळे प्लेयर्स निवडा!");
-    }
-    
+    // 1. Validation: Player nivdle aahet ka aani te vegle aahet ka?
     if (!p1id || !p2id) {
-        return alert("❌ दोन्ही प्लेयर्स निवडणे गरजेचे आहे!");
+        return alert("❌ कृपया दोन्ही प्लेयर्स निवडा!");
+    }
+    if (p1id === p2id) {
+        return alert("❌ कृपया दोन वेगळे प्लेयर्स निवडा! एकाच प्लेयरला दोनदा निवडता येणार नाही.");
     }
 
     let pairId = [p1id, p2id].sort().join("_");
     let pairName = document.getElementById("p1").options[document.getElementById("p1").selectedIndex].text + " + " + document.getElementById("p2").options[document.getElementById("p2").selectedIndex].text;
 
-    // Baki sagle joinJodi che logic (Coins check, already taken check) tech rahil...
+    // 2. Firebase check (Jodi aadhi koni ghetli aahe ka?)
     db.ref("Selections/" + mid).once("value", snapshot => {
-        // ... tumcha juna code yithe pudhe continue kara ...
+        let isAlreadyTaken = false;
+        snapshot.forEach(item => {
+            let data = item.val();
+            if ([data.p1, data.p2].sort().join("_") === pairId) {
+                isAlreadyTaken = true;
+            }
+        });
+
+        if (isAlreadyTaken) {
+            return alert("❌ ही जोडी आधीच घेतली गेली आहे! दुसरी जोडी निवडा.");
+        }
+
+        // 3. Coins check aani Jodi Final kara
+        db.ref("Users/" + user + "/coins").once("value", c => {
+            let bal = c.val() || 0;
+            if (bal < 200) {
+                return alert("❌ तुमच्याकडे पुरेसे कॉइन्स नाहीत! (किमान २०० हवेत)");
+            }
+
+            // Database madhe save kara
+            db.ref("Selections/" + mid).push({ 
+                u: user, 
+                p1: p1id, 
+                p2: p2id, 
+                txt: pairName 
+            }).then(() => {
+                // Coins vaza (minus) kara
+                db.ref("Users/" + user + "/coins").set(bal - 200);
+                alert("✅ जोडी यशस्वीरीत्या लावली!");
+            });
+        });
     });
 }
+
 
           
 function listenScores(mid) {
