@@ -165,7 +165,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.9 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.10 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -410,28 +410,33 @@ function joinJodi() {
     let mid = document.getElementById("matchSelect").value;
     if (!mid) return alert("मॅच निवडा!");
 
-    // 1. TIME LIMIT CHECK (DeadLine Logic)
+    // 1. TIME LIMIT CHECK
     db.ref("MatchList/" + mid).once("value", matchSnap => {
         let matchData = matchSnap.val();
-        
-        // Match chi Date aani Time ekatra kara (उदा. 2026-04-25T19:30:00)
         let matchStart = new Date(matchData.date + "T" + matchData.time);
         let now = new Date();
 
-        // Jar aata chi vel match suru honyachya velenantarchi asel tar...
         if (now >= matchStart) {
             return alert("❌ वेळ संपली आहे! मॅच सुरू झाली असल्यामुळे आता जोडी लावता येणार नाही.");
         }
 
-        // --- Pudhe tumche regular Jodi Join karnyache logic ---
         let p1id = document.getElementById("p1").value;
         let p2id = document.getElementById("p2").value;
 
         if (!p1id || !p2id) return alert("❌ कृपया दोन्ही प्लेयर्स निवडा!");
         if (p1id === p2id) return alert("❌ कृपया दोन वेगळे प्लेयर्स निवडा!");
 
-        let pairId = [p1id, p2id].sort().join("_");
         let pairName = document.getElementById("p1").options[document.getElementById("p1").selectedIndex].text + " + " + document.getElementById("p2").options[document.getElementById("p2").selectedIndex].text;
+
+        // 👇 NAVIN: CONFIRMATION BOX 👇
+        let userConfirm = confirm("तुम्हाला ही जोडी निश्चित करायची आहे का?\n\nजोडी: " + pairName + "\nशुल्क: 200 Coins");
+        
+        if (!userConfirm) {
+            return; // Jar user ne 'Cancel' kela tar function ithech thambel
+        }
+        // 👆 CONFIRMATION BOX SAMPALA 👆
+
+        let pairId = [p1id, p2id].sort().join("_");
 
         db.ref("Selections/" + mid).once("value", snapshot => {
             let isAlreadyTaken = false;
@@ -447,12 +452,13 @@ function joinJodi() {
 
                 db.ref("Selections/" + mid).push({ u: user, p1: p1id, p2: p2id, txt: pairName }).then(() => {
                     db.ref("Users/" + user + "/coins").set(bal - 200);
-                    alert("✅ जोडी यशस्वीरीत्या लावली!");
+                    alert("✅ " + pairName + " ही जोडी यशस्वीरीत्या लावली!");
                 });
             });
         });
     });
 }
+
  
 function listenScores(mid) {
     db.ref("Selections/" + mid).on("value", sel => {
