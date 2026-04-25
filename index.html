@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.03</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.04</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -106,182 +106,219 @@
     </div>
 </div>
 
-<script>
-const firebaseConfig = { apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs", databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com" };
+        <script>
+const firebaseConfig = { 
+    apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs", 
+    databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com" 
+};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let user = "";
 const ADMIN_ID = "santoshbagul";
 
-// --- AUTH ---
+// --- AUTH SYSTEM (LOGIN/SIGNUP) ---
 function toggleAuth(isLogin) {
-    authTitle.innerText = isLogin ? "Login" : "Sign Up";
-    loginGroup.classList.toggle("hidden", !isLogin);
-    signupGroup.classList.toggle("hidden", isLogin);
+    document.getElementById("authTitle").innerText = isLogin ? "Login" : "Sign Up";
+    document.getElementById("loginGroup").classList.toggle("hidden", !isLogin);
+    document.getElementById("signupGroup").classList.toggle("hidden", isLogin);
 }
 
 function handleAuth(isLogin) {
-    let id = userId.value.toLowerCase().trim();
-    let pass = userPass.value.trim();
-    if(!id || !pass) return alert("Please enter Username & Password!");
+    let id = document.getElementById("userId").value.toLowerCase().trim();
+    let pass = document.getElementById("userPass").value.trim();
 
-    db.ref("Users/"+id).once("value", s => {
+    if(!id || !pass) return alert("Username आणि Password टाका!");
+
+    db.ref("Users/" + id).once("value", s => {
         if(isLogin) {
-            // Login Logic: Password check karne garjeche aahe
-            if(s.exists() && s.val().password === pass) {
-                proceedApp(id);
+            // Login Logic
+            if(s.exists()) {
+                let userData = s.val();
+                if(userData.password === pass) {
+                    proceedApp(id);
+                } else {
+                    alert("चुकीचा पासवर्ड!");
+                }
             } else {
-                alert("चुकीचा Username किंवा Password!");
+                alert("हा युजर अस्तित्वात नाही. Sign Up करा.");
             }
         } else {
-            // Sign Up Logic: Password aani Coins doghi save kara
+            // Sign Up Logic
             if(s.exists()) {
-                alert("हा User आधीपासून आहे! कृपया Login करा.");
+                alert("हा युजरनेम आधीच वापरला गेला आहे!");
             } else {
-                // Yithe password save karne mukhya aahe
-                db.ref("Users/"+id).set({
-                    password: pass, 
-                    coins: 500 // Navin user la 500 coins gift (hve aslyas 0 kara)
+                db.ref("Users/" + id).set({
+                    password: pass,
+                    coins: 500 // नवीन युजरला ५०० फ्री कॉइन्स
                 }).then(() => {
-                    alert("Account तयार झाले!");
+                    alert("Registration यशस्वी झाले!");
                     proceedApp(id);
-                });
+                }).catch(e => alert("Error: " + e.message));
             }
         }
     });
 }
 
 function proceedApp(id) {
-    user = id; authSection.classList.add("hidden"); mainApp.classList.remove("hidden"); coinBox.classList.remove("hidden");
-    if(user === ADMIN_ID) adminBtn.classList.remove("hidden");
-    db.ref("Users/"+user+"/coins").on("value", s => balanceText.innerText = s.val()||0);
+    user = id; 
+    document.getElementById("authSection").classList.add("hidden"); 
+    document.getElementById("mainApp").classList.remove("hidden"); 
+    document.getElementById("coinBox").classList.remove("hidden");
+
+    if(user === ADMIN_ID) {
+        document.getElementById("adminBtn").classList.remove("hidden");
+    }
+
+    // Live Balance Update
+    db.ref("Users/" + user + "/coins").on("value", s => {
+        document.getElementById("balanceText").innerText = s.val() || 0;
+    });
+
     loadMatches();
 }
 
-// --- WALLET LOGIC (COIN REQUEST) ---
-function toggleCoinReq() { coinReqArea.classList.toggle("hidden"); }
+// --- WALLET LOGIC ---
+function toggleCoinReq() { 
+    document.getElementById("coinReqArea").classList.toggle("hidden"); 
+}
 
 function sendCoinRequest() {
-    let amt = parseInt(reqAmt.value);
+    let amt = parseInt(document.getElementById("reqAmt").value);
     if(!amt || amt <= 0) return alert("योग्य रक्कम टाका!");
+    
     db.ref("CoinRequests").push({
         u: user,
         amount: amt,
         time: Date.now()
     }).then(() => {
-        alert("Request Sent! Admin approve karel.");
-        reqAmt.value = ""; toggleCoinReq();
+        alert("Request पाठवली! ऍडमिन लवकरच अप्रूव्ह करतील.");
+        document.getElementById("reqAmt").value = ""; 
+        toggleCoinReq();
     });
 }
 
 function listenCoinRequests() {
     db.ref("CoinRequests").on("value", s => {
         let h = "";
-        if(!s.exists()) h = "<p class='text-center text-muted small'>No pending requests.</p>";
-        s.forEach(req => {
-            let d = req.val();
-            h += `<div class="d-flex justify-content-between align-items-center coin-req-card shadow-sm">
-                    <div><b>${d.u}</b><br><span class="text-success fw-bold">₹${d.amount}</span></div>
-                    <button onclick="approveCoins('${req.key}', '${d.u}', ${d.amount})" class="btn btn-sm btn-success">Approve</button>
-                  </div>`;
-        });
-        adminReqListArea.innerHTML = h;
+        if(!s.exists()) {
+            h = "<p class='text-center text-muted small'>No pending requests.</p>";
+        } else {
+            s.forEach(req => {
+                let d = req.val();
+                h += `<div class="d-flex justify-content-between align-items-center coin-req-card shadow-sm">
+                        <div><b>${d.u}</b><br><span class="text-success fw-bold">₹${d.amount}</span></div>
+                        <button onclick="approveCoins('${req.key}', '${d.u}', ${d.amount})" class="btn btn-sm btn-success">Approve</button>
+                      </div>`;
+            });
+        }
+        document.getElementById("adminReqListArea").innerHTML = h;
     });
 }
 
 function approveCoins(reqId, targetUser, amt) {
-    db.ref("Users/"+targetUser+"/coins").once("value", s => {
-        let current = s.val()||0;
-        db.ref("Users/"+targetUser+"/coins").set(current + amt).then(() => {
-            db.ref("CoinRequests/"+reqId).remove();
-            alert(amt + " coins added to " + targetUser);
+    db.ref("Users/" + targetUser + "/coins").once("value", s => {
+        let current = s.val() || 0;
+        db.ref("Users/" + targetUser + "/coins").set(current + amt).then(() => {
+            db.ref("CoinRequests/" + reqId).remove();
+            alert("कॉइन्स जमा झाले!");
         });
     });
 }
 
-// --- JODI LOGIC ---
+// --- MATCH LOGIC ---
 function loadMatches() {
     db.ref("MatchList").on("value", s => {
         let h = "<option value=''>-- Select Match --</option>";
         s.forEach(m => h += `<option value="${m.key}">${m.val().name}</option>`);
-        matchSelect.innerHTML = h;
+        document.getElementById("matchSelect").innerHTML = h;
     });
 }
 
 function loadMatchBoard() {
-    let mid = matchSelect.value; if(!mid) return;
-    playArea.classList.remove("hidden");
-    db.ref("Players/"+mid).on("value", s => {
+    let mid = document.getElementById("matchSelect").value; 
+    if(!mid) return;
+    document.getElementById("playArea").classList.remove("hidden");
+    db.ref("Players/" + mid).on("value", s => {
         let d = s.val(); if(!d) return;
         let h1="", h2="";
         for(let k in d.team1) h1 += `<option value="${k}">${d.team1[k]}</option>`;
         for(let k in d.team2) h2 += `<option value="${k}">${d.team2[k]}</option>`;
-        p1.innerHTML = h1; p2.innerHTML = h2;
+        document.getElementById("p1").innerHTML = h1; 
+        document.getElementById("p2").innerHTML = h2;
     });
     listenScores(mid);
 }
 
 function joinJodi() {
-    let mid = matchSelect.value;
-    let p1id = p1.value, p2id = p2.value;
+    let mid = document.getElementById("matchSelect").value;
+    let p1id = document.getElementById("p1").value;
+    let p2id = document.getElementById("p2").value;
     let pairId = [p1id, p2id].sort().join("_");
-    let pairName = p1.options[p1.selectedIndex].text + " + " + p2.options[p2.selectedIndex].text;
+    let pairName = document.getElementById("p1").options[document.getElementById("p1").selectedIndex].text + " + " + document.getElementById("p2").options[document.getElementById("p2").selectedIndex].text;
 
     db.ref("Selections/" + mid).once("value", snapshot => {
         let isAlreadyTaken = false;
         snapshot.forEach(item => {
-            if ([item.val().p1, item.val().p2].sort().join("_") === pairId) isAlreadyTaken = true;
+            let data = item.val();
+            if ([data.p1, data.p2].sort().join("_") === pairId) isAlreadyTaken = true;
         });
 
         if (isAlreadyTaken) return alert("❌ ही जोडी आधीच घेतली गेली आहे!");
 
         db.ref("Users/" + user + "/coins").once("value", c => {
             let bal = c.val() || 0;
-            if (bal < 200) return alert("Low Coins!"PRO            db.ref("Selections/" + mid).push({ u: user, p1: p1id, p2: p2id, txt: pairName });
+            if (bal < 200) return alert("कॉइन्स कमी आहेत!");
+            db.ref("Selections/" + mid).push({ u: user, p1: p1id, p2: p2id, txt: pairName });
             db.ref("Users/" + user + "/coins").set(bal - 200);
-            alert("✅ जोडी यशस्वीरीत्या लावली!");
+            alert("✅ जोडी लावली!");
         });
     });
 }
 
 function listenScores(mid) {
-    db.ref("Selections/"+mid).on("value", sel => {
-        db.ref("LiveScore/"+mid).on("value", sc => {
-            let runs = sc.val()||{}; let h = "";
+    db.ref("Selections/" + mid).on("value", sel => {
+        db.ref("LiveScore/" + mid).on("value", sc => {
+            let runs = sc.val() || {}; let h = "";
             sel.forEach(item => {
-                let d = item.val(); let s1 = runs[d.p1]||0, s2 = runs[d.p2]||0;
+                let d = item.val(); 
+                let s1 = runs[d.p1] || 0, s2 = runs[d.p2] || 0;
                 h += `<div class="d-flex justify-content-between p-2 border-bottom">
                     <div><b>${d.u.toUpperCase()}</b><br><small>${d.txt}</small></div>
                     <div class="badge bg-primary fs-6 h-50 mt-2">${s1+s2}</div>
                 </div>`;
             });
-            scoreBoard.innerHTML = h || "<p class='text-center p-3'>No Jodis yet</p>";
+            document.getElementById("scoreBoard").innerHTML = h || "<p class='text-center p-3'>No Jodis yet</p>";
         });
     });
 }
 
-// --- ADMIN FUNCTIONS ---
 function addNewMatch() {
-    let mid = newMatchId.value.trim();
-    db.ref("MatchList/"+mid).set({name: team1Name.value+" vs "+team2Name.value});
+    let mid = document.getElementById("newMatchId").value.trim();
+    let t1 = document.getElementById("team1Name").value;
+    let t2 = document.getElementById("team2Name").value;
+    db.ref("MatchList/" + mid).set({ name: t1 + " vs " + t2 });
     alert("Match Created!");
 }
 
 function showAdmin() { 
-    mainApp.classList.add("hidden"); 
-    adminPanel.classList.remove("hidden"); 
+    document.getElementById("mainApp").classList.add("hidden"); 
+    document.getElementById("adminPanel").classList.remove("hidden"); 
     loadAdminPlayers(); 
     listenCoinRequests(); 
 }
-function closeAdmin() { adminPanel.classList.add("hidden"); mainApp.classList.remove("hidden"); }
+
+function closeAdmin() { 
+    document.getElementById("adminPanel").classList.add("hidden"); 
+    document.getElementById("mainApp").classList.remove("hidden"); 
+}
 
 function loadAdminPlayers() {
-    let mid = matchSelect.value;
-    if(!mid) return adminPlayerList.innerHTML = "<p class='p-3'>Select match first!</p>";
-    db.ref("Players/"+mid).once("value", p => {
-        db.ref("LiveScore/"+mid).on("value", sc => {
-            let r = sc.val()||{}; let h = "";
+    let mid = document.getElementById("matchSelect").value;
+    if(!mid) return document.getElementById("adminPlayerList").innerHTML = "<p class='p-3'>Select match first!</p>";
+    db.ref("Players/" + mid).once("value", p => {
+        db.ref("LiveScore/" + mid).on("value", sc => {
+            let r = sc.val() || {}; let h = "";
             p.forEach(team => {
                 h += `<div class="bg-dark text-white p-1 small ps-2">${team.key.toUpperCase()}</div>`;
                 team.forEach(player => {
@@ -292,10 +329,11 @@ function loadAdminPlayers() {
                     </div>`;
                 });
             });
-            adminPlayerList.innerHTML = h;
+            document.getElementById("adminPlayerList").innerHTML = h;
         });
     });
 }
 </script>
+
 </body>
 </html>
