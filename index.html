@@ -275,7 +275,7 @@ function loadMatches() {
         let h = "<option value=''>-- Select Match --</option>";
         s.forEach(m => {
             let d = m.val();
-            h += `<option value="${m.key}">${m.val().name}(${d.date} | ${d.time})</option>`;
+            h += `<option value="${m.key}">${d.name}(${d.date} | ${d.time})</option>`;
         });
         // Match selection doghi kade update kara
         document.getElementById("matchSelect").innerHTML = h; // Main UI
@@ -314,6 +314,7 @@ function joinJodi() {
     let mid = document.getElementById("matchSelect").value;
     let p1id = document.getElementById("p1").value;
     let p2id = document.getElementById("p2").value;
+   
     if (!mid) return alert("मॅच निवडा!");
     db.ref("MatchList/" + mid).once("value", matchSnap => {
         let matchData = matchSnap.val();
