@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.08</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.09</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -295,41 +295,52 @@ function joinJodi() {
         });
     });
 }
+            
 function listenScores(mid) {
     db.ref("Selections/" + mid).on("value", sel => {
         db.ref("LiveScore/" + mid).on("value", sc => {
             let runs = sc.val() || {}; 
-            let myJodis = []; // Swatachya Jodis sathi
-            let otherJodis = []; // Itaranchya Jodis sathi
+            let myJodis = []; 
+            let otherJodis = []; 
             
             sel.forEach(item => {
                 let d = item.val(); 
                 let s1 = runs[d.p1] || 0;
                 let s2 = runs[d.p2] || 0;
                 let total = s1 + s2;
+
+                let names = d.txt.split(" + "); 
+                let name1 = names[0] || "Player 1";
+                let name2 = names[1] || "Player 2";
                 
-                // HTML Template banva
+                // Highlight sathi condition: Jar user swatachi jodi asel tar '⭐' dakhva
+                let displayName = d.u === user ? "⭐ " + d.u.toUpperCase() : d.u.toUpperCase();
+
                 let cardHtml = `
                 <div class="card mb-2 shadow-sm border-0 ${d.u === user ? 'bg-warning-subtle border-start border-warning border-4' : ''}">
                     <div class="card-body p-2">
                         <div class="d-flex justify-content-between align-items-center">
                             <div style="flex: 1;">
-                                <b class="${d.u === user ? 'text-dark' : 'text-primary'}">${d.u === user ? '⭐ MAJHI JODI' : d.u.toUpperCase()}</b><br>
-                                <small class="text-muted">${d.txt}</small>
+                                <b class="${d.u === user ? 'text-dark' : 'text-primary'}">${displayName}</b><br>
                                 <div class="mt-1">
-                                    <span class="badge bg-white text-dark border mr-1">P1: ${s1}</span>
-                                    <span class="badge bg-white text-dark border">P2: ${s2}</span>
+                                    <div class="d-flex justify-content-between pe-3 mb-1">
+                                        <small class="text-muted">${name1}:</small>
+                                        <small class="fw-bold text-dark">${s1}</small>
+                                    </div>
+                                    <div class="d-flex justify-content-between pe-3">
+                                        <small class="text-muted">${name2}:</small>
+                                        <small class="fw-bold text-dark">${s2}</small>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="text-center ${d.u === user ? 'bg-warning' : 'bg-primary text-white'} rounded px-3 py-1 shadow-sm">
+                            <div class="text-center ${d.u === user ? 'bg-warning border border-dark' : 'bg-primary text-white'} rounded px-3 py-2 shadow-sm" style="min-width: 70px;">
                                 <small class="d-block fw-bold" style="font-size: 10px;">TOTAL</small>
-                                <span class="fs-5 fw-bold">${total}</span>
+                                <span class="fs-4 fw-bold">${total}</span>
                             </div>
                         </div>
                     </div>
                 </div>`;
 
-                // Sort karnyasathi logic: user asel tar 'myJodis' madhe taka, nahi tar 'otherJodis' madhe
                 if (d.u === user) {
                     myJodis.push(cardHtml);
                 } else {
@@ -337,12 +348,12 @@ function listenScores(mid) {
                 }
             });
 
-            // Sagleat aadhi Majhi Jodi ani mag itaranchi
             let finalHtml = myJodis.join("") + otherJodis.join("");
             document.getElementById("scoreBoard").innerHTML = finalHtml || "<p class='text-center p-3 text-muted'>No Jodis yet</p>";
         });
     });
 }
+
 
 
 function addNewMatch() {
