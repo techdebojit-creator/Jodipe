@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.09</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.10</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -73,7 +73,7 @@
 
         <div class="d-flex gap-2 pb-5">
             <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark w-100 hidden">⚙️ ADMIN CONTROL</button>
-            <button onclick="location.reload()" class="btn btn-outline-danger w-100">LOGOUT</button>
+            <button onclick="logout()" class="btn btn-outline-danger w-100">LOGOUT</button>
         </div>
     </div>
 
@@ -133,50 +133,49 @@ const db = firebase.database();
 let user = "";
 const ADMIN_ID = "santoshbagul";
 
+// --- 1. APP SURU HOTANA CHECK KARA (Auto Login) ---
+window.onload = function() {
+    let savedUser = localStorage.getItem("jodiUser");
+    if (savedUser) {
+        proceedApp(savedUser); // Jar aadhi login asel tar direct app ughda
+    }
+};
+
 // --- AUTH SYSTEM (LOGIN/SIGNUP) ---
 function toggleAuth(isLogin) {
     document.getElementById("authTitle").innerText = isLogin ? "Login" : "Sign Up";
     document.getElementById("loginGroup").classList.toggle("hidden", !isLogin);
     document.getElementById("signupGroup").classList.toggle("hidden", isLogin);
 }
-
 function handleAuth(isLogin) {
     let id = document.getElementById("userId").value.toLowerCase().trim();
     let pass = document.getElementById("userPass").value.trim();
 
-    if(!id || !pass) return alert("Username आणि Password टाका!");
+    if(!id || !pass) return alert("Username आणि Password टाka!");
 
     db.ref("Users/" + id).once("value", s => {
         if(isLogin) {
-            // Login Logic
-            if(s.exists()) {
-                let userData = s.val();
-                if(userData.password === pass) {
-                    proceedApp(id);
-                } else {
-                    alert("चुकीचा पासवर्ड!");
-                }
+            if(s.exists() && s.val().password === pass) {
+                proceedApp(id);
             } else {
-                alert("हा युजर अस्तित्वात नाही. Sign Up करा.");
+                alert("चुकीचा पासवर्ड किंवा युजरनेम!");
             }
         } else {
-            // Sign Up Logic
             if(s.exists()) {
-                alert("हा युजरनेम आधीच वापरला गेला आहे!");
+                alert("हा युजर आधीच आहे!");
             } else {
-                db.ref("Users/" + id).set({
-                    password: pass,
-                    coins: 500 // नवीन युजरला ५०० फ्री कॉइन्स
-                }).then(() => {
-                    alert("Registration यशस्वी झाले!");
+                db.ref("Users/" + id).set({ password: pass, coins: 500 }).then(() => {
+                    alert("Registration झाले!");
                     proceedApp(id);
-                }).catch(e => alert("Error: " + e.message));
+                });
             }
         }
     });
 }
   function proceedApp(id) {
     user = id; 
+    localStorage.setItem("jodiUser", id); // ID phone chya memory madhe save kela
+
     document.getElementById("authSection").classList.add("hidden"); 
     document.getElementById("mainApp").classList.remove("hidden"); 
     document.getElementById("coinBox").classList.remove("hidden");
@@ -185,7 +184,6 @@ function handleAuth(isLogin) {
         document.getElementById("adminBtn").classList.remove("hidden");
     }
 
-    // Live Balance Update
     db.ref("Users/" + user + "/coins").on("value", s => {
         document.getElementById("balanceText").innerText = s.val() || 0;
     });
