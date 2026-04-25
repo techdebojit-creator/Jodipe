@@ -69,6 +69,12 @@
                 <button onclick="sendCoinRequest()" class="btn btn-warning fw-bold">Request</button>
             </div>
         </div>
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+    <span class="small fw-bold text-muted text-uppercase">निवडा मॅच:</span>
+    <button onclick="logout()" class="btn btn-outline-danger btn-sm fw-bold shadow-sm" style="border-radius: 20px; padding: 2px 12px; font-size: 12px;">
+        🔓 LOGOUT
+    </button>
+</div>
 
         <div class="card p-3 mb-3">
             <label class="small fw-bold text-muted">SELECT MATCH</label>
@@ -98,10 +104,7 @@
 </div>
         <div id="scoreBoard" class="card p-2 mb-4" style="min-height: 100px;"></div>
 
-        <div class="d-flex gap-2 pb-5">
-            <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark w-100 hidden">⚙️ ADMIN CONTROL</button>
-            <button onclick="logout()" class="btn btn-outline-danger w-100">LOGOUT</button>
-        </div>
+        
     </div>
     <div class="card p-3 mb-3 border-0 shadow-sm" style="background: #fff;">
     <h6 class="fw-bold text-danger text-uppercase mb-3" style="letter-spacing: 1px;">
@@ -175,7 +178,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.14 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.15 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -724,9 +727,16 @@ function declareWinner() {
 
 // Script tag sampnya aadhi yithe paste kara
 function logout() {
-    localStorage.removeItem("jodiUser"); // Memory madhun user ID kadhun taka
-    location.reload(); // App la refresh kara jyamule login screen disel
+    if(confirm("तुम्हाला लॉगआउट करायचे आहे का?")) {
+        // १. लोकल मेमरीमधून युजरचे नाव काढून टाका
+        localStorage.removeItem("jodiUser");
+        localStorage.removeItem("lastSelectedMatch");
+
+        // २. पेज रिफ्रेश करा जेणेकरून लॉगिन स्क्रीन येईल
+        window.location.reload();
+    }
 }
+
 function refreshScores() {
     let mid = document.getElementById("matchSelect").value;
     if(!mid) return alert("कृपया आधी मॅच निवडा!");
