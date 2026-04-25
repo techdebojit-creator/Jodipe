@@ -165,7 +165,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.8 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.9 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -287,9 +287,8 @@ function handleAuth(isLogin) {
                 });
             }
         }
-    });
-}
-            function toggleForget(show) {
+    }
+function toggleForget(show) {
     document.getElementById("loginGroup").classList.toggle("hidden", show);
     document.getElementById("signupGroup").classList.add("hidden");
     document.getElementById("forgetGroup").classList.toggle("hidden", !show);
@@ -436,7 +435,7 @@ function loadMatchBoard() {
 
     db.ref("Players/" + mid).on("value", s => {
         let d = s.val(); if(!d) return;
-        let allPlayersHtml = "<option value=''>Nivda</option>";
+        let allPlayersHtml = "<option value=''>निवडा</option>";
         for(let k in d.team1) allPlayersHtml += `<option value="${k}">${d.team1[k]} (T1)</option>`;
         for(let k in d.team2) allPlayersHtml += `<option value="${k}">${d.team2[k]} (T2)</option>`;
         document.getElementById("p1").innerHTML = allPlayersHtml;
