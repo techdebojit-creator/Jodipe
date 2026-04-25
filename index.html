@@ -179,7 +179,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.22 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.23 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -225,7 +225,8 @@
     <p class="fw-bold small mb-2 text-success text-uppercase">➕ Add Missing Player</p>
     
     <label class="small fw-bold text-muted">Select Match</label>
-    <select id="targetMatch" class="form-select form-select-sm mb-2"></select>
+    <select id="targetMatch" class="form-select" onchange="loadAdminPlayers()">
+    </select>
     
     <label class="small fw-bold text-muted">Select Team</label>
     <select id="playerTeam" class="form-select form-select-sm mb-2">
@@ -461,19 +462,27 @@ function loadMatchBoard() {
     let mid = document.getElementById("matchSelect").value; 
     if(!mid) return;
 
-    // --- Match ID memory madhe save kara ---
-    localStorage.setItem("lastSelectedMatch", mid);
+    // १. संतोष, नवीन मॅच निवडल्यावर जुन्या मॅचचे 'लाईव्ह अपडेट्स' बंद करा
+    // यामुळे जुना डेटा डिलीट होत नाही, फक्त डिस्कनेक्ट होतो.
+    db.ref("Selections").child(mid).off(); 
+    db.ref("LiveScore").child(mid).off();
 
+    localStorage.setItem("lastSelectedMatch", mid);
     document.getElementById("playArea").classList.remove("hidden");
 
+    // प्लेयर्स लोड करणे
     db.ref("Players/" + mid).on("value", s => {
-        let d = s.val(); if(!d) return;
+        let d = s.val(); 
         let allPlayersHtml = "<option value=''>निवडा</option>";
-        for(let k in d.team1) allPlayersHtml += `<option value="${k}">${d.team1[k]} (T1)</option>`;
-        for(let k in d.team2) allPlayersHtml += `<option value="${k}">${d.team2[k]} (T2)</option>`;
+        if(d) {
+            for(let k in d.team1) allPlayersHtml += `<option value="${k}">${d.team1[k]} (T1)</option>`;
+            for(let k in d.team2) allPlayersHtml += `<option value="${k}">${d.team2[k]} (T2)</option>`;
+        }
         document.getElementById("p1").innerHTML = allPlayersHtml;
         document.getElementById("p2").innerHTML = allPlayersHtml;
     });
+
+    // २. आता फक्त निवडलेल्या मॅचचे स्कोर ऐकणे सुरू करा
     listenScores(mid);
     // loadMatchBoard च्या शेवटी हे टाका
 db.ref("MatchList/" + mid + "/winner").on("value", s => {
@@ -546,12 +555,24 @@ function joinJodi() {
 
  
 function listenScores(mid) {
+    // १. संतोष, नवीन मॅच सुरू करण्यापूर्वी जुन्या मॅचचे सर्व 'Active Connections' बंद करा
+    // यामुळे मागील मॅचचा डेटा या मॅचमध्ये घुसणार नाही.
+    db.ref("Selections").off(); 
+    db.ref("LiveScore").off();
+
+    // २. फक्त सध्याच्या मॅच आयडीचा (mid) डेटा ऐकणे सुरू करा
     db.ref("Selections/" + mid).on("value", sel => {
         db.ref("LiveScore/" + mid).on("value", sc => {
             let runs = sc.val() || {}; 
             let myJodis = []; 
             let otherJodis = []; 
             
+            // डेटा नसेल तर मेसेज दाखवा
+            if (!sel.exists()) {
+                document.getElementById("scoreBoard").innerHTML = "<p class='text-center p-3 text-muted'>No Jodis yet</p>";
+                return;
+            }
+
             sel.forEach(item => {
                 let d = item.val(); 
                 let s1 = runs[d.p1] || 0;
@@ -562,7 +583,6 @@ function listenScores(mid) {
                 let name1 = names[0] || "Player 1";
                 let name2 = names[1] || "Player 2";
                 
-                // Highlight sathi condition: Jar user swatachi jodi asel tar '⭐' dakhva
                 let displayName = d.u === user ? "⭐ " + d.u.toUpperCase() : d.u.toUpperCase();
 
                 let cardHtml = `
@@ -598,10 +618,11 @@ function listenScores(mid) {
             });
 
             let finalHtml = myJodis.join("") + otherJodis.join("");
-            document.getElementById("scoreBoard").innerHTML = finalHtml || "<p class='text-center p-3 text-muted'>No Jodis yet</p>";
+            document.getElementById("scoreBoard").innerHTML = finalHtml;
         });
     });
 }
+
 
 function addNewMatch() {
     let mid = document.getElementById("newMatchId").value.trim();
@@ -679,25 +700,50 @@ function closeAdmin() {
 }
 
 function loadAdminPlayers() {
-    let mid = document.getElementById("matchSelect").value;
-    if(!mid) return document.getElementById("adminPlayerList").innerHTML = "<p class='p-3'>Select match first!</p>";
-    db.ref("Players/" + mid).once("value", p => {
+    let mid = document.getElementById("targetMatch").value; 
+    let adminListArea = document.getElementById("adminPlayerList");
+
+    if(!mid) {
+        adminListArea.innerHTML = "<p class='p-3 text-danger small text-center'>आधी मॅच निवडा!</p>";
+        return;
+    }
+
+    // १. संतोष, नवीन मॅच लोड करण्यापूर्वी जुन्या मॅचचे लिसनर्स बंद करा
+    db.ref("Players").off();
+    db.ref("LiveScore").off();
+
+    // २. फक्त निवडलेल्या मॅचचा डेटा एकदाच (once) वाचा किंवा लाईव्ह (on) ठेवा
+    db.ref("Players/" + mid).on("value", p => {
         db.ref("LiveScore/" + mid).on("value", sc => {
-            let r = sc.val() || {}; let h = "";
+            let runs = sc.val() || {}; 
+            let html = "";
+            
+            if(!p.exists()) {
+                adminListArea.innerHTML = "<p class='p-3 text-center'>या मॅचमध्ये खेळाडू नाहीत.</p>";
+                return;
+            }
+
             p.forEach(team => {
-                h += `<div class="bg-dark text-white p-1 small ps-2">${team.key.toUpperCase()}</div>`;
+                // टीमचे नाव (Team 1 / Team 2)
+                html += `<div class="bg-dark text-white p-1 small ps-2 fw-bold text-uppercase" style="font-size:11px;">${team.key}</div>`;
+                
                 team.forEach(player => {
-                    h += `<div class="d-flex justify-content-between p-1 border-bottom bg-white">
-                        <span class="ps-2">${player.val()}</span>
-                        <input type="number" class="form-control form-control-sm w-25" value="${r[player.key]||0}" 
-                        onchange="db.ref('LiveScore/${mid}/${player.key}').set(parseInt(this.value))">
+                    html += `
+                    <div class="d-flex justify-content-between align-items-center p-2 border-bottom bg-white">
+                        <span class="ps-2 fw-bold text-dark" style="font-size: 13px;">${player.val()}</span>
+                        <div class="input-group input-group-sm" style="width: 100px;">
+                            <input type="number" class="form-control text-center fw-bold border-primary" 
+                                value="${runs[player.key] || 0}" 
+                                onchange="db.ref('LiveScore/${mid}/${player.key}').set(parseInt(this.value))">
+                        </div>
                     </div>`;
                 });
             });
-            document.getElementById("adminPlayerList").innerHTML = h;
+            adminListArea.innerHTML = html;
         });
     });
 }
+
 // Admin panel ughdalyavar winner list bharne
 function loadWinnerList() {
     let mid = document.getElementById("matchSelect").value;
