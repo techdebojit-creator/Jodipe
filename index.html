@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.04</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.05</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -96,6 +96,22 @@
             <input id="team2Name" class="form-control form-control-sm mb-2" placeholder="Team 2 Name">
             <button onclick="addNewMatch()" class="btn btn-primary btn-sm w-100">Create Match</button>
         </div>
+ <div class="card p-3 mb-3 border-success">
+    <p class="fw-bold small mb-2 text-success text-uppercase">➕ Add Missing Player</p>
+    
+    <label class="small fw-bold text-muted">Select Match</label>
+    <select id="targetMatch" class="form-select form-select-sm mb-2"></select>
+    
+    <label class="small fw-bold text-muted">Select Team</label>
+    <select id="playerTeam" class="form-select form-select-sm mb-2">
+        <option value="team1">Team 1</option>
+        <option value="team2">Team 2</option>
+    </select>
+    
+    <input id="playerName" class="form-control form-control-sm mb-2" placeholder="Enter Player Name">
+    
+    <button onclick="addPlayerToMatch()" class="btn btn-success btn-sm w-100">Add Player</button>
+</div>
 
         <div class="card p-3 mb-3 border-warning">
             <p class="fw-bold small mb-2">2. Live Run Updater</p>
@@ -230,10 +246,15 @@ function approveCoins(reqId, targetUser, amt) {
 function loadMatches() {
     db.ref("MatchList").on("value", s => {
         let h = "<option value=''>-- Select Match --</option>";
-        s.forEach(m => h += `<option value="${m.key}">${m.val().name}</option>`);
-        document.getElementById("matchSelect").innerHTML = h;
+        s.forEach(m => {
+            h += `<option value="${m.key}">${m.val().name}</option>`;
+        });
+        // Match selection doghi kade update kara
+        document.getElementById("matchSelect").innerHTML = h; // Main UI
+        document.getElementById("targetMatch").innerHTML = h; // Admin UI
     });
 }
+
 
 function loadMatchBoard() {
     let mid = document.getElementById("matchSelect").value; 
@@ -299,6 +320,25 @@ function addNewMatch() {
     let t2 = document.getElementById("team2Name").value;
     db.ref("MatchList/" + mid).set({ name: t1 + " vs " + t2 });
     alert("Match Created!");
+}
+function addPlayerToMatch() {
+    let mid = document.getElementById("targetMatch").value; // Nivadleli Match ID
+    let team = document.getElementById("playerTeam").value; // Team 1 ki Team 2
+    let pName = document.getElementById("playerName").value.trim(); // Player cha naav
+
+    if(!mid || !pName) return alert("Match निवडा आणि Player चे नाव टाका!");
+
+    // Player sathi ek unique ID banva (Timestamp mule duplicate hot nahi)
+    let pid = "p" + Date.now();
+
+    // Firebase madhe Player save kara
+    db.ref(`Players/${mid}/${team}/${pid}`).set(pName).then(() => {
+        // Player add jhalya nantar Scoreboard madhe tyache runs 0 set kara
+        db.ref(`LiveScore/${mid}/${pid}`).set(0);
+        
+        alert("✅ Player यशस्वीरीत्या Add झाला!");
+        document.getElementById("playerName").value = ""; // Input clear kara
+    }).catch(e => alert("Error: " + e.message));
 }
 
 function showAdmin() { 
