@@ -3,33 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JODI11 PRO - Cricket</title>
+    <title>JODI11 PRO - Santosh Bagul</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         :root { --primary: #002f6c; --secondary: #ffcc00; }
-        body { font-family: 'Poppins', sans-serif; background: #f4f7f6; font-size: 14px; }
-        .navbar { background: var(--primary); color: white; border-bottom: 3px solid var(--secondary); }
-        .card { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        body { font-family: 'Poppins', sans-serif; background: #f4f7f6; font-size: 14px; padding-bottom: 20px; }
+        .navbar { background: var(--primary); color: white; border-bottom: 3px solid var(--secondary); position: sticky; top: 0; z-index: 1000; }
+        .card { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
         .hidden { display: none !important; }
         .btn-primary { background: var(--primary); border: none; }
         .admin-badge { background: #ffebee; color: #c62828; font-weight: bold; border: 1px solid #ef9a9a; }
-        .coin-req-card { background: #fff; border-left: 5px solid #28a745; margin-bottom: 10px; padding: 10px; border-radius: 8px; }
+        .rules-list p { margin-bottom: 8px; line-height: 1.4; }
+        .winner-anim { background: #e8f5e9; border: 2px solid #28a745 !important; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
 <nav class="navbar px-3 py-2">
-    <div class="container-fluid d-flex justify-content-between">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
         <h5 class="m-0 fw-bold">🏏 JODI11 PRO</h5>
-        <div class="badge bg-success shadow-sm ms-2" id="onlineCounterBox" style="font-size: 11px;">
-    🟢 Online: <span id="onlineCount">0</span>
-</div>
-   <div id="coinBox" class="hidden d-flex align-items-center gap-2">
-            <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
-            <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
+        <div class="d-flex align-items-center gap-2">
+            <div class="badge bg-success shadow-sm" style="font-size: 10px;">🟢 <span id="onlineCount">0</span></div>
+            <div id="coinBox" class="hidden d-flex align-items-center gap-1">
+                <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
+                <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
+            </div>
         </div>
     </div>
 </nav>
@@ -39,723 +41,271 @@
         <h4 class="text-center fw-bold mb-4" id="authTitle">Login</h4>
         <input id="userId" class="form-control mb-3" placeholder="Username">
         <input id="userPass" type="password" class="form-control mb-3" placeholder="Password">
+        
         <div id="loginGroup">
             <button onclick="handleAuth(true)" class="btn btn-primary w-100 fw-bold mb-3">LOG IN</button>
-            <p class="text-center small mt-2">
-    <a href="#" onclick="toggleForget(true)" class="text-danger text-decoration-none">Password विसरलात?</a>
-</p>
-
-<div id="forgetGroup" class="hidden">
-    <h6 class="fw-bold text-center mb-3">🔒 Reset PassworRequestst</h6>
-    <input id="forgetUser" class="form-control mb-2" placeholder="तुमचा Username">
-    <input id="newPassReq" class="form-control mb-3" placeholder="नवीन हवा असलेला पासवर्ड">
-    <button onclick="sendResetRequest()" class="btn btn-danger w-100 fw-bold mb-2">REQUEST ADMIN</button>
-    <button onclick="toggleForget(false)" class="btn btn-light w-100 btn-sm">Back to Login</button>
-</div>
-
-            <p class="text-center small">Account nahi? <a href="#" onclick="toggleAuth(false)">Sign Up</a></p>
+            <p class="text-center small">Account नाही? <a href="#" onclick="toggleAuth(false)">Sign Up करा</a></p>
         </div>
+
         <div id="signupGroup" class="hidden">
-            <button onclick="handleAuth(false)" class="btn btn-success w-100 fw-bold mb-3">SIGN UP</button>
-            <p class="text-center small">Account aahe? <a href="#" onclick="toggleAuth(true)">Login</a></p>
+            <button onclick="handleAuth(false)" class="btn btn-success w-100 fw-bold mb-3">CREATE ACCOUNT</button>
+            <p class="text-center small">Account आहे? <a href="#" onclick="toggleAuth(true)">Login करा</a></p>
         </div>
+        <button id="adminBtn" onclick="showAdmin()" class="btn btn-dark btn-sm w-100 mt-3 hidden">⚙️ ADMIN CONTROL</button>
     </div>
 
     <div id="mainApp" class="hidden">
         <div id="coinReqArea" class="card p-3 mb-3 border-warning hidden">
-            <h6 class="fw-bold small">Add Coins Request</h6>
+            <h6 class="fw-bold small">Add Coins (Max: 1000)</h6>
             <div class="input-group input-group-sm">
-                <input id="reqAmt" type="number" class="form-control" placeholder="Amount (उदा. 500)">
-                <button onclick="sendCoinRequest()" class="btn btn-warning fw-bold">Request</button>
+                <input id="reqAmt" type="number" class="form-control" placeholder="रक्कम टाका">
+                <button onclick="sendCoinRequest()" class="btn btn-warning fw-bold">Send</button>
             </div>
         </div>
+
         <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-    <span class="small fw-bold text-muted text-uppercase">निवडा मॅच:</span>
-    <button onclick="logout()" class="btn btn-outline-danger btn-sm fw-bold shadow-sm" style="border-radius: 20px; padding: 2px 12px; font-size: 12px;">
-        🔓 LOGOUT
-    </button>
-</div>
+            <span class="small fw-bold text-muted text-uppercase">निवडा मॅच:</span>
+            <button onclick="logout()" class="btn btn-outline-danger btn-sm fw-bold" style="border-radius: 20px; font-size: 10px;">🔓 LOGOUT</button>
+        </div>
 
         <div class="card p-3 mb-3">
-            <label class="small fw-bold text-muted">SELECT MATCH</label>
             <select id="matchSelect" class="form-select mb-3" onchange="loadMatchBoard()"></select>
-
             <div id="playArea" class="hidden">
                 <div class="row g-2 mb-3">
                     <div class="col-6"><select id="p1" class="form-select form-select-sm"></select></div>
                     <div class="col-6"><select id="p2" class="form-select form-select-sm"></select></div>
                 </div>
-                <button onclick="joinJodi()" class="btn btn-success w-100 fw-bold">JOIN JODI (200 Coins)</button>
+                <button onclick="joinJodi()" class="btn btn-success w-100 fw-bold shadow">JOIN JODI (200 Coins)</button>
             </div>
         </div>
-<div id="winnerBox" class="card p-3 mb-3 border-success shadow hidden" style="background: #e8f5e9; border: 2px solid #28a745 !important;">
-    <div class="text-center">
-        <h4 class="mb-1">🏆 Winner Announced 🏆</h4>
-        <h5 class="fw-bold text-success m-0" id="winnerNameText">---</h5>
-        <p class="small text-muted mt-2 mb-0" id="winAmountText"></p>
-    </div>
-</div>
+
+        <div id="winnerBox" class="card p-3 mb-3 winner-anim hidden text-center">
+            <h4 class="mb-1">🏆 Winner Announced 🏆</h4>
+            <h5 class="fw-bold text-success m-0" id="winnerNameText">---</h5>
+            <p class="small text-muted mt-2 mb-0" id="winAmountText"></p>
+        </div>
 
         <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
-    <h6 class="fw-bold m-0 text-dark">📊 LIVE STANDINGS</h6>
-    <button onclick="refreshScores()" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 shadow-sm px-3" style="border-radius: 20px; font-size: 12px;">
-        <span>🔄</span> Refresh
-    </button>
-</div>
-        <div id="scoreBoard" class="card p-2 mb-4" style="min-height: 100px;"></div>
-
-        
-    </div>
-    <div class="card p-3 mb-3 border-0 shadow-sm" style="background: #fff;">
-    <h6 class="fw-bold text-danger text-uppercase mb-3" style="letter-spacing: 1px;">
-        📜 नियम आणि अटी (Rules & Regulations)
-    </h6>
-    
-    <div class="rules-list" style="font-size: 13px; color: #444;">
-        <div class="mb-2 d-flex">
-            <span class="fw-bold text-danger me-2">१.</span>
-            <span><b>वेळ मर्यादा (Time Limit):</b> मॅच सुरू होण्यापूर्वीच जोडी लावणे अनिवार्य आहे. मॅचची वेळ संपल्यानंतर कोणतीही जोडी स्वीकारली जाणार नाही.</span>
+            <h6 class="fw-bold m-0 text-dark">📊 LIVE STANDINGS</h6>
+            <button onclick="refreshScores()" class="btn btn-sm btn-outline-primary px-3" style="border-radius: 20px; font-size: 11px;">🔄 Refresh</button>
         </div>
+        <div id="scoreBoard" class="card p-2 mb-4" style="min-height: 80px;"></div>
 
-        <div class="mb-2 d-flex">
-            <span class="fw-bold text-danger me-2">२.</span>
-            <span><b>निवड (Selection):</b> प्रत्येक जोडीमध्ये २ खेळाडू असतील. युजर एकाच टीमचे २ किंवा दोन्ही टीमचा १-१ खेळाडू निवडू शकतो.</span>
-        </div>
-
-        <div class="mb-2 d-flex">
-            <span class="fw-bold text-danger me-2">३.</span>
-            <span><b>प्रथम प्राधान्य (First Come First Serve):</b> एक जोडी एकाच युजरला मिळेल. जर ती जोडी आधीच कोणी घेतली असेल, तर तुम्हाला दुसरी निवडावी लागेल.</span>
-        </div>
-
-        <div class="mb-2 d-flex">
-            <span class="fw-bold text-danger me-2">४.</span>
-            <span><b>गुण पद्धत (Scoring):</b> स्कोअरबोर्डवर दिसणारे रन्स थेट मॅचच्या रनवर आधारित असतील. दोन्ही खेळाडूंचे एकूण रन्स म्हणजे तुमचा फायनल स्कोर.</span>
-        </div>
-
-        <div class="mb-2 d-flex">
-            <span class="fw-bold text-danger me-2">५.</span>
-            <span><b>वॉलेट (Wallet):</b> प्रत्येक जोडीसाठी <b>२०० कॉइन्स</b> एंट्री फी असेल. एकदा जोडी कन्फर्म झाल्यावर कॉइन्स रिफंड मिळणार नाहीत.</span>
-        </div>
-
-        <div class="mb-2 d-flex">
-            <span class="fw-bold text-danger me-2">६.</span>
-            <span><b>ऍड कॉइन्स (Add Coins):</b> कॉइन्ससाठी ऍडमिनकडे रिक्वेस्ट पाठवा. पेमेंट खात्री (Verify) झाल्यावरच कॉइन्स जमा केले जातील.</span>
-        </div>
-
-        <div class="mb-2 d-flex">
-            <span class="fw-bold text-danger me-2">७.</span>
-            <span><b>शिस्त (Discipline):</b> हॅकिंग किंवा सिस्टमशी छेडछाड करण्याचा प्रयत्न केल्यास तुमचे अकाऊंट कायमचे ब्लॉक केले जाईल.</span>
-        </div>
-
-        <div class="mb-0 d-flex">
-            <span class="fw-bold text-danger me-2">८.</span>
-            <span><b>अंतिम निर्णय (Decision):</b> कोणत्याही तांत्रिक समस्येत किंवा वादात <b>ऍडमिनचा (Santosh Bagul)</b> निर्णय अंतिम राहील.</span>
-        </div>
-    </div>
-</div>
-
-<div class="mt-5 pb-5">
-    <div class="card p-3 mb-3 border-0 shadow-sm" style="background: #e3f2fd;">
-        <h6 class="fw-bold text-primary text-uppercase small">ℹ️ About JODI11 PRO</h6>
-        <p class="mb-0 text-muted" style="font-size: 13px;">
-            JODI11 PRO हे क्रिकेट प्रेमींसाठी बनवलेले एक खास व्यासपीठ आहे. येथे तुम्ही तुमच्या आवडत्या खेळाडूंची जोडी बनवून लाईव्ह मॅचचा आनंद घेऊ शकता. पारदर्शक स्कोरिंग आणि जलद अपडेट्स हे आमचे वैशिष्ट्य आहे.
-        </p>
-    </div>
-
-    <div class="card p-3 border-0 shadow-sm">
-        <h6 class="fw-bold text-primary text-uppercase small">📞 Contact Us</h6>
-        <p class="small text-muted mb-3">काही अडचण असल्यास किंवा कॉइन्ससाठी खालील पर्यायांवर संपर्क करा:📞 9579476353</p>
-        
-        <div class="d-flex flex-column gap-2">
-            <a href="https://wa.me/919579476353" target="_blank" class="btn btn-sm btn-outline-success d-flex align-items-center justify-content-center gap-2">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18" alt="WA"> 
-                WhatsApp Support
-            </a>
-            
-            <a href="https://t.me/debojit" target="_blank" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-2">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" width="18" alt="TG"> 
-                Join Telegram
-            </a>
-
-            <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.15 Developed & Managed by ❤️</small><br>
-                <span class="fw-bold text-dark">SANTOSH BAGUL</span>
+        <div class="card p-3 mb-3 border-0 shadow-sm">
+            <h6 class="fw-bold text-danger text-uppercase mb-3">📜 नियम आणि अटी</h6>
+            <div class="rules-list text-muted" style="font-size: 12px;">
+                <p><b>१.</b> मॅच सुरू झाल्यावर जोडी लावता येणार नाही.</p>
+                <p><b>२.</b> प्रत्येक जोडीत २ खेळाडू असतील (T1, T2 किंवा Mix).</p>
+                <p><b>३.</b> एन्ट्री फी २०० कॉइन्स आहे (रिफंड नाही).</p>
+                <p><b>४.</b> दोन्ही खेळाडूंच्या एकूण रन्सवर विनर ठरवला जाईल.</p>
+                <p><b>५.</b> एका वेळी जास्तीत जास्त १००० कॉइन्सची रिक्वेस्ट पाठवता येईल.</p>
+                <p><b>६.</b> विनरच्या एकूण पूल मधून १०% ऍडमिन फी कापली जाईल.</p>
             </div>
         </div>
+
+        <div class="card p-3 mb-3 border-0 shadow-sm" style="background: #e3f2fd;">
+            <h6 class="fw-bold text-primary text-uppercase small">ℹ️ About JODI11 PRO</h6>
+            <p class="mb-0 text-muted" style="font-size: 12px;">संतोष बागुल यांचे अधिकृत क्रिकेट फॅन्टसी प्लॅटफॉर्म. विश्वासार्ह आणि जलद सर्व्हिस.</p>
+        </div>
+
+        <div class="card p-3 border-0 shadow-sm text-center">
+            <h6 class="fw-bold text-primary text-uppercase small">📞 Contact Support</h6>
+            <p class="small text-muted mb-3">संपर्क: <b>9579476353</b></p>
+            <a href="https://wa.me/919579476353" class="btn btn-sm btn-success w-100 fw-bold mb-2">WhatsApp Support</a>
+            <small class="text-muted mt-2 d-block">V. 1.14.16 Developed & Managed by ❤️ <b>SANTOSH BAGUL</b></small>
+        </div>
     </div>
-</div>
 
     <div id="adminPanel" class="hidden">
-        <div class="card p-3 admin-badge mb-3">
-            <h6 class="m-0">ADMIN MASTER CONTROL</h6>
-        </div>
-
-        <div class="card p-3 mb-3 border-success shadow-sm">
-            <p class="fw-bold small mb-2 text-success">💰 PENDING COIN REQUESTS</p>
-            <div id="adminReqListArea">
-                <p class="text-center text-muted small">No pending requests.</p>
-            </div>
-        </div>
- optionion    <div class="card p-3 mb-3 border-danger shadow-sm">
-    <p class="fw-bold small mb-2 text-danger">🔑 PASSWORD RESET REQUESTS</p>
-    <div id="adminResetList">
-        <p class="text-center text-muted small">No pending resets.</p>
-    </div>
-</div>
-
+        <div class="card p-2 admin-badge mb-3 text-center">ADMIN PANEL</div>
+        <div class="card p-3 mb-3 border-success"><p class="fw-bold small text-success">💰 COIN REQUESTS</p><div id="adminReqListArea"></div></div>
+        
         <div class="card p-3 mb-3 border-primary">
-            <p class="fw-bold small mb-2 text-primary">1. Add New IPL Match</p>
-            <input id="newMatchId" class="form-control form-control-sm mb-2" placeholder="Match ID (MI_vs_RCB)">
-            <input id="team1Name" class="form-control form-control-sm mb-2" placeholder="Team 1 Name">
-            <input id="team2Name" class="form-control form-control-sm mb-2" placeholder="Team 2 Name">
-            <div class="row g-2 mb-2">
-        <div class="col-6">
-            <label class="small fw-bold text-muted">तारीख निवडा</label>
-            <input id="matchDate" type="date" class="form-control form-control-sm">
+            <p class="fw-bold small text-primary">1. ADD MATCH</p>
+            <input id="newMatchId" class="form-control form-control-sm mb-1" placeholder="Match ID">
+            <input id="team1Name" class="form-control form-control-sm mb-1" placeholder="Team 1">
+            <input id="team2Name" class="form-control form-control-sm mb-2" placeholder="Team 2">
+            <button onclick="addNewMatch()" class="btn btn-primary btn-sm w-100">CREATE</button>
         </div>
-        <div class="col-6">
-            <label class="small fw-bold text-muted">वेळ निवडा</label>
-            <input id="matchTime" type="time" class="form-control form-control-sm">
+
+        <div class="card p-3 mb-3 border-success">
+            <p class="fw-bold small text-success">2. ADD PLAYER</p>
+            <select id="targetMatch" class="form-select form-select-sm mb-1"></select>
+            <select id="playerTeam" class="form-select form-select-sm mb-1"><option value="team1">Team 1</option><option value="team2">Team 2</option></select>
+            <input id="playerName" class="form-control form-control-sm mb-2" placeholder="Player Name">
+            <button onclick="addPlayerToMatch()" class="btn btn-success btn-sm w-100">ADD</button>
         </div>
-    </div>
-            <button onclick="addNewMatch()" class="btn btn-primary btn-sm w-100">Create Match</button>
-        </div>
- <div class="card p-3 mb-3 border-success">
-    <p class="fw-bold small mb-2 text-success text-uppercase">➕ Add Missing Player</p>
-    
-    <label class="small fw-bold text-muted">Select Match</label>
-    <select id="targetMatch" class="form-select form-select-sm mb-2"></select>
-    
-    <label class="small fw-bold text-muted">Select Team</label>
-    <select id="playerTeam" class="form-select form-select-sm mb-2">
-        <option value="team1">Team 1</option>
-        <option value="team2">Team 2</option>
-    </select>
-    
-    <input id="playerName" class="form-control form-control-sm mb-2" placeholder="Enter Player Name">
-    
-    <button onclick="addPlayerToMatch()" class="btn btn-success btn-sm w-100">Add Player</button>
-</div>
 
         <div class="card p-3 mb-3 border-warning">
-            <p class="fw-bold small mb-2">2. Live Run Updater</p>
-            <div id="adminPlayerList" class="bg-white border rounded" style="max-height: 250px; overflow-y: auto;"></div>
+            <p class="fw-bold small">3. LIVE UPDATER</p>
+            <div id="adminPlayerList" class="bg-white border rounded p-2" style="max-height: 200px; overflow-y: auto;"></div>
         </div>
-<div class="card p-3 mb-3 border-primary shadow-sm">
-    <p class="fw-bold small mb-2 text-primary text-uppercase">🏆 Declare Match Winner</p>
-    <label class="small fw-bold text-muted">Select Winning User</label>
-    <select id="winnerSelect" class="form-select form-select-sm mb-3">
-        </select>
-    <button onclick="declareWinner()" class="btn btn-primary btn-sm w-100 fw-bold">DECLARE & DISTRIBUTE COINS</button>
-</div>
 
-        <button onclick="closeAdmin()" class="btn btn-secondary w-100 mb-5">Back to Home</button>
+        <div class="card p-3 mb-3 border-primary">
+            <p class="fw-bold small">4. DECLARE WINNER</p>
+            <select id="winnerSelect" class="form-select form-select-sm mb-2"></select>
+            <button onclick="declareWinner()" class="btn btn-primary btn-sm w-100">WINNER & PAYOUT (10% OFF)</button>
+        </div>
+        <button onclick="closeAdmin()" class="btn btn-secondary w-100 mb-5">BACK</button>
     </div>
 </div>
 
-        <script>
-const firebaseConfig = { 
-    apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs", 
-    databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com" 
-};
+<script>
+const firebaseConfig = { apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs", databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+let user = ""; const ADMIN_ID = "santoshbagul";
 
-let user = "";
-const ADMIN_ID = "santoshbagul";
+window.onload = () => { let u = localStorage.getItem("jodiUser"); if(u) proceedApp(u); };
 
-// --- 1. APP SURU HOTANA CHECK KARA (Auto Login) ---
-window.onload = function() {
-    let savedUser = localStorage.getItem("jodiUser");
-    if (savedUser) {
-        proceedApp(savedUser); // Jar aadhi login asel tar direct app ughda
-    }
-};
+function toggleAuth(l) { document.getElementById("authTitle").innerText = l?"Login":"Sign Up"; document.getElementById("loginGroup").classList.toggle("hidden",!l); document.getElementById("signupGroup").classList.toggle("hidden",l); }
 
-// --- AUTH SYSTEM (LOGIN/SIGNUP) ---
-function toggleAuth(isLogin) {
-    document.getElementById("authTitle").innerText = isLogin ? "Login" : "Sign Up";
-    document.getElementById("loginGroup").classList.toggle("hidden", !isLogin);
-    document.getElementById("signupGroup").classList.toggle("hidden", isLogin);
-}
-// --- AUTH SYSTEM (LOGIN/SIGNUP) ---
-function toggleAuth(isLogin) {
-    document.getElementById("authTitle").innerText = isLogin ? "Login" : "Sign Up";
-    document.getElementById("loginGroup").classList.toggle("hidden", !isLogin);
-    document.getElementById("signupGroup").classList.toggle("hidden", isLogin);
-}
-
-function handleAuth(isLogin) {
+function handleAuth(l) {
     let id = document.getElementById("userId").value.toLowerCase().trim();
-    let pass = document.getElementById("userPass").value.trim();
-
-    if(!id || !pass) return alert("Username आणि Password टाका!");
-
-    db.ref("Users/" + id).once("value", s => {
-        if(isLogin) {
-            // Login Logic
-            if(s.exists() && s.val().password === pass) {
-                proceedApp(id);
-            } else {
-                alert("चुकीचा पासवर्ड किंवा युजरनेम!");
-            }
-        } else {
-            // Sign Up Logic
-            if(s.exists()) {
-                alert("हा युजर आधीच आहे!");
-            } else {
-                let passPattern = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/;
-                if(!passPattern.test(pass)) {
-                    return alert("❌ सुरक्षा कारणामुळे: पासवर्ड किमान ६ अक्षरी असावा आणि त्यात किमान एक नंबर व एक चिन्ह (@, #, $, %) असावे!");
-                }
-                db.ref("Users/" + id).set({ password: pass, coins: 500 }).then(() => {
-                    alert("Registration झाले!");
-                    proceedApp(id);
-                });
-            }
-        }
-    }); // <--- Ha bracket tumchya code madhe missing hota
+    let p = document.getElementById("userPass").value.trim();
+    if(!id || !p) return alert("सर्व माहिती भरा!");
+    db.ref("Users/"+id).once("value", s => {
+        if(l) { if(s.exists() && s.val().password === p) proceedApp(id); else alert("चुकीचा माहिती!"); }
+        else { if(s.exists()) return alert("हा युजर आधीच आहे!"); db.ref("Users/"+id).set({password:p, coins:500}).then(()=>proceedApp(id)); }
+    });
 }
 
-// proceedApp function handleAuth chya baher pahije
 function proceedApp(id) {
-    user = id; 
-    localStorage.setItem("jodiUser", id); 
-
-    document.getElementById("authSection").classList.add("hidden"); 
-    document.getElementById("mainApp").classList.remove("hidden"); 
-    document.getElementById("coinBox").classList.remove("hidden");
-
-    if(user === ADMIN_ID) {
-        document.getElementById("adminBtn").classList.remove("hidden");
-    }
-
-    db.ref("Users/" + user + "/coins").on("value", s => {
-        document.getElementById("balanceText").innerText = s.val() || 0;
-    });
-
-    loadMatches();
-    trackOnlineStatus(id);
+    user = id; localStorage.setItem("jodiUser", id);
+    document.getElementById("authSection").classList.add("hidden"); document.getElementById("mainApp").classList.remove("hidden"); document.getElementById("coinBox").classList.remove("hidden");
+    if(user === ADMIN_ID) document.getElementById("adminBtn").classList.remove("hidden");
+    db.ref("Users/"+user+"/coins").on("value", s => { document.getElementById("balanceText").innerText = s.val() || 0; });
+    loadMatches(); trackOnlineStatus(id);
 }
 
-function trackOnlineStatus(userId) {
-    // १. युजरच्या ऑनलाइन स्टेटसचा पाथ (Firebase Path)
-    let userStatusRef = db.ref('status/' + userId);
-
-    // २. Firebase कडून कनेक्शन स्टेटस मिळवा
-    db.ref('.info/connected').on('value', (snapshot) => {
-        if (snapshot.val() === false) return;
-
-        // ३. जर युजरने ॲप बंद केले किंवा इंटरनेट गेले, तर 'offline' करा
-        // 'onDisconnect' हे फंक्शन आपोआप काम करते
-        userStatusRef.onDisconnect().remove().then(() => {
-            // ४. युजर सध्या ऑनलाइन असेल तर 'online' सेट करा
-            userStatusRef.set(true);
-        });
-    });
-
-    // ५. एकूण किती लोक ऑनलाइन आहेत ते मोजण्यासाठी (Listener)
-    db.ref('status').on('value', (snapshot) => {
-        let count = snapshot.numChildren() || 0;
-        document.getElementById('onlineCount').innerText = count;
-    });
-}
-
-// --- WALLET LOGIC ---
-function toggleCoinReq() { 
-    document.getElementById("coinReqArea").classList.toggle("hidden"); 
+function trackOnlineStatus(id) {
+    let sRef = db.ref('status/'+id);
+    db.ref('.info/connected').on('value', snap => { if(snap.val()) sRef.onDisconnect().remove().then(()=>sRef.set(true)); });
+    db.ref('status').on('value', snap => { document.getElementById('onlineCount').innerText = snap.numChildren()||0; });
 }
 
 function sendCoinRequest() {
-    let amt = parseInt(document.getElementById("reqAmt").value);
-    
-    // १. बेसिक व्हॅलिडेशन
-    if(!amt || amt <= 0) {
-        return alert("❌ कृपया योग्य रक्कम टाका!");
-    }
-
-    // २. 👇 १००० ची मर्यादा (Limit Check) 👇
-    if(amt > 1000) {
-        return alert("❌ मर्यादा: तुम्ही एका वेळी जास्तीत जास्त १००० कॉइन्सचीच विनंती करू शकता!");
-    }
-    
-    // ३. युजरकडून कन्फर्मेशन घ्या
-    let confirmMsg = `तुम्ही ₹${amt} कॉइन्ससाठी विनंती पाठवत आहात.\n\nतुम्ही खात्रीशीर आहात का?`;
-    
-    if (confirm(confirmMsg)) {
-        db.ref("CoinRequests").push({
-            u: user,
-            amount: amt,
-            time: Date.now()
-        }).then(() => {
-            alert("✅ तुमची विनंती यशस्वीरीत्या पाठवली आहे! ऍडमिन लवकरच अप्रूव्ह करतील.");
-            document.getElementById("reqAmt").value = ""; 
-            toggleCoinReq(); 
-        }).catch((error) => {
-            alert("❌ एरर: विनंती पाठवता आली नाही.");
-        });
+    let a = parseInt(document.getElementById("reqAmt").value);
+    if(!a || a <= 0 || a > 1000) return alert("मर्यादा १००० कॉइन्स!");
+    if(confirm(a+" कॉइन्ससाठी विनंती पाठवायची?")) {
+        db.ref("CoinRequests").push({u:user, amount:a, time:Date.now()}).then(()=>{alert("विनंती पाठवली!"); document.getElementById("reqAmt").value="";});
     }
 }
 
-
-function listenCoinRequests() {
-    db.ref("CoinRequests").on("value", s => {
-        let h = "";
-        if(!s.exists()) {
-            h = "<p class='text-center text-muted small'>No pending requests.</p>";
-        } else {
-            s.forEach(req => {
-                let d = req.val();
-                h += `<div class="d-flex justify-content-between align-items-center coin-req-card shadow-sm">
-                        <div><b>${d.u}</b><br><span class="text-success fw-bold">₹${d.amount}</span></div>
-                        <button onclick="approveCoins('${req.key}', '${d.u}', ${d.amount})" class="btn btn-sm btn-success">Approve</button>
-                      </div>`;
-            });
-        }
-        document.getElementById("adminReqListArea").innerHTML = h;
-    });
-}
-
-function approveCoins(reqId, targetUser, amt) {
-    db.ref("Users/" + targetUser + "/coins").once("value", s => {
-        let current = s.val() || 0;
-        db.ref("Users/" + targetUser + "/coins").set(current + amt).then(() => {
-            db.ref("CoinRequests/" + reqId).remove();
-            alert("कॉइन्स जमा झाले!");
-        });
-    });
-}
-
-// --- MATCH LOGIC ---
 function loadMatches() {
     db.ref("MatchList").on("value", s => {
-        let h = "<option value=''>-- मॅच निवडा --</option>";
-        s.forEach(m => {
-            let d = m.val();
-            h += `<option value="${m.key}">${d.name} (${d.date} | ${d.time})</option>`;
-        });
-        document.getElementById("matchSelect").innerHTML = h;
-
-        // --- Memory madhun juni match set kara ---
-        let lastMatch = localStorage.getItem("lastSelectedMatch");
-        if(lastMatch && document.getElementById("matchSelect").querySelector(`option[value="${lastMatch}"]`)) {
-            document.getElementById("matchSelect").value = lastMatch;
-            loadMatchBoard(); // Automatic players load hotil
-        }
+        let h = "<option value=''>-- निवडा --</option>";
+        s.forEach(m => { h += `<option value="${m.key}">${m.val().name}</option>`; });
+        document.getElementById("matchSelect").innerHTML = h; document.getElementById("targetMatch").innerHTML = h;
     });
 }
 
 function loadMatchBoard() {
-    let mid = document.getElementById("matchSelect").value; 
-    if(!mid) return;
-
-    // --- Match ID memory madhe save kara ---
-    localStorage.setItem("lastSelectedMatch", mid);
-
+    let m = document.getElementById("matchSelect").value; if(!m) return;
     document.getElementById("playArea").classList.remove("hidden");
-
-    db.ref("Players/" + mid).on("value", s => {
-        let d = s.val(); if(!d) return;
-        let allPlayersHtml = "<option value=''>निवडा</option>";
-        for(let k in d.team1) allPlayersHtml += `<option value="${k}">${d.team1[k]} (T1)</option>`;
-        for(let k in d.team2) allPlayersHtml += `<option value="${k}">${d.team2[k]} (T2)</option>`;
-        document.getElementById("p1").innerHTML = allPlayersHtml;
-        document.getElementById("p2").innerHTML = allPlayersHtml;
+    db.ref("Players/"+m).on("value", s => {
+        let d = s.val(), h = "<option value=''>निवडा</option>";
+        if(d) {
+            for(let k in d.team1) h += `<option value="${k}">${d.team1[k]} (T1)</option>`;
+            for(let k in d.team2) h += `<option value="${k}">${d.team2[k]} (T2)</option>`;
+        }
+        document.getElementById("p1").innerHTML = h; document.getElementById("p2").innerHTML = h;
     });
-    listenScores(mid);
-    // loadMatchBoard च्या शेवटी हे टाका
-db.ref("MatchList/" + mid + "/winner").on("value", s => {
-    let winData = s.val();
-    let wBox = document.getElementById("winnerBox");
-    if(winData) {
-        wBox.classList.remove("hidden");
-        document.getElementById("winnerNameText").innerText = winData.user.toUpperCase();
-        document.getElementById("winAmountText").innerText = "अभिनंदन! विनरला " + winData.amount + " कॉइन्स मिळाले आहेत.";
-    } else {
-        wBox.classList.add("hidden");
-    }
-});
-
+    listenScores(m);
+    db.ref("MatchList/"+m+"/winner").on("value", s => {
+        let w = s.val(); document.getElementById("winnerBox").classList.toggle("hidden", !w);
+        if(w) { document.getElementById("winnerNameText").innerText = w.user.toUpperCase(); document.getElementById("winAmountText").innerText = "विनरला "+w.amount+" कॉइन्स मिळाले!"; }
+    });
 }
-
 
 function joinJodi() {
-    let mid = document.getElementById("matchSelect").value;
-    if (!mid) return alert("मॅच निवडा!");
-
-    // 1. TIME LIMIT CHECK
-    db.ref("MatchList/" + mid).once("value", matchSnap => {
-        let matchData = matchSnap.val();
-        let matchStart = new Date(matchData.date + "T" + matchData.time);
-        let now = new Date();
-
-        if (now >= matchStart) {
-            return alert("❌ वेळ संपली आहे! मॅच सुरू झाली असल्यामुळे आता जोडी लावता येणार नाही.");
-        }
-
-        let p1id = document.getElementById("p1").value;
-        let p2id = document.getElementById("p2").value;
-
-        if (!p1id || !p2id) return alert("❌ कृपया दोन्ही प्लेयर्स निवडा!");
-        if (p1id === p2id) return alert("❌ कृपया दोन वेगळे प्लेयर्स निवडा!");
-
-        let pairName = document.getElementById("p1").options[document.getElementById("p1").selectedIndex].text + " + " + document.getElementById("p2").options[document.getElementById("p2").selectedIndex].text;
-
-        // 👇 NAVIN: CONFIRMATION BOX 👇
-        let userConfirm = confirm("तुम्हाला ही जोडी निश्चित करायची आहे का?\n\nजोडी: " + pairName + "\nशुल्क: 200 Coins");
-        
-        if (!userConfirm) {
-            return; // Jar user ne 'Cancel' kela tar function ithech thambel
-        }
-        // 👆 CONFIRMATION BOX SAMPALA 👆
-
-        let pairId = [p1id, p2id].sort().join("_");
-
-        db.ref("Selections/" + mid).once("value", snapshot => {
-            let isAlreadyTaken = false;
-            snapshot.forEach(item => {
-                if ([item.val().p1, item.val().p2].sort().join("_") === pairId) isAlreadyTaken = true;
-            });
-
-            if (isAlreadyTaken) return alert("❌ ही जोडी आधीच घेतली गेली आहे!");
-
-            db.ref("Users/" + user + "/coins").once("value", c => {
-                let bal = c.val() || 0;
-                if (bal < 200) return alert("❌ तुमच्याकडे पुरेसे कॉइन्स नाहीत!");
-
-                db.ref("Selections/" + mid).push({ u: user, p1: p1id, p2: p2id, txt: pairName }).then(() => {
-                    db.ref("Users/" + user + "/coins").set(bal - 200);
-                    alert("✅ " + pairName + " ही जोडी यशस्वीरीत्या लावली!");
-                });
-            });
-        });
+    let m = document.getElementById("matchSelect").value, p1 = document.getElementById("p1").value, p2 = document.getElementById("p2").value;
+    if(!p1 || !p2 || p1 === p2) return alert("दोन वेगळे खेळाडू निवडा!");
+    db.ref("Users/"+user+"/coins").once("value", s => {
+        let b = s.val()||0; if(b < 200) return alert("कमी बॅलेन्स!");
+        let t = document.getElementById("p1").options[document.getElementById("p1").selectedIndex].text+" + "+document.getElementById("p2").options[document.getElementById("p2").selectedIndex].text;
+        db.ref("Selections/"+m).push({u:user, p1:p1, p2:p2, txt:t}).then(()=>{ db.ref("Users/"+user+"/coins").set(b-200); alert("जोडी लावली!"); });
     });
 }
 
- 
-function listenScores(mid) {
-    db.ref("Selections/" + mid).on("value", sel => {
-        db.ref("LiveScore/" + mid).on("value", sc => {
-            let runs = sc.val() || {}; 
-            let myJodis = []; 
-            let otherJodis = []; 
-            
-            sel.forEach(item => {
-                let d = item.val(); 
-                let s1 = runs[d.p1] || 0;
-                let s2 = runs[d.p2] || 0;
-                let total = s1 + s2;
-
-                let names = d.txt.split(" + "); 
-                let name1 = names[0] || "Player 1";
-                let name2 = names[1] || "Player 2";
-                
-                // Highlight sathi condition: Jar user swatachi jodi asel tar '⭐' dakhva
-                let displayName = d.u === user ? "⭐ " + d.u.toUpperCase() : d.u.toUpperCase();
-
-                let cardHtml = `
-                <div class="card mb-2 shadow-sm border-0 ${d.u === user ? 'bg-warning-subtle border-start border-warning border-4' : ''}">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div style="flex: 1;">
-                                <b class="${d.u === user ? 'text-dark' : 'text-primary'}">${displayName}</b><br>
-                                <div class="mt-1">
-                                    <div class="d-flex justify-content-between pe-3 mb-1">
-                                        <small class="text-muted">${name1}:</small>
-                                        <small class="fw-bold text-dark">${s1}</small>
-                                    </div>
-                                    <div class="d-flex justify-content-between pe-3">
-                                        <small class="text-muted">${name2}:</small>
-                                        <small class="fw-bold text-dark">${s2}</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-center ${d.u === user ? 'bg-warning border border-dark' : 'bg-primary text-white'} rounded px-3 py-2 shadow-sm" style="min-width: 70px;">
-                                <small class="d-block fw-bold" style="font-size: 10px;">TOTAL</small>
-                                <span class="fs-4 fw-bold">${total}</span>
-                            </div>
-                        </div>
+function listenScores(m) {
+    db.ref("Selections/"+m).on("value", sel => {
+        db.ref("LiveScore/"+m).on("value", sc => {
+            let r = sc.val()||{}, h = "";
+            sel.forEach(i => {
+                let d = i.val(), tot = (r[d.p1]||0)+(r[d.p2]||0);
+                h += `<div class="card mb-2 p-2 ${d.u===user?'bg-warning-subtle border-start border-warning border-3':''}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><b>${d.u.toUpperCase()}</b><br><small class="text-muted">${d.txt}</small></div>
+                        <div class="fw-bold fs-5 text-primary">${tot}</div>
                     </div>
                 </div>`;
-
-                if (d.u === user) {
-                    myJodis.push(cardHtml);
-                } else {
-                    otherJodis.push(cardHtml);
-                }
             });
-
-            let finalHtml = myJodis.join("") + otherJodis.join("");
-            document.getElementById("scoreBoard").innerHTML = finalHtml || "<p class='text-center p-3 text-muted'>No Jodis yet</p>";
+            document.getElementById("scoreBoard").innerHTML = h || "No Jodis yet";
         });
     });
 }
 
+// ADMIN PANEL LOGIC
+function showAdmin() { document.getElementById("mainApp").classList.add("hidden"); document.getElementById("adminPanel").classList.remove("hidden"); listenCoinRequests(); loadAdminPlayers(); }
+function closeAdmin() { document.getElementById("adminPanel").classList.add("hidden"); document.getElementById("mainApp").classList.remove("hidden"); }
+
+function listenCoinRequests() {
+    db.ref("CoinRequests").on("value", s => {
+        let h = ""; s.forEach(r => { h += `<div class="p-2 border-bottom d-flex justify-content-between"><span>${r.val().u} (₹${r.val().amount})</span><button onclick="approveCoins('${r.key}','${r.val().u}',${r.val().amount})" class="btn btn-sm btn-success">OK</button></div>`; });
+        document.getElementById("adminReqListArea").innerHTML = h || "No requests";
+    });
+}
+
+function approveCoins(id, u, a) { db.ref("Users/"+u+"/coins").once("value", s => { db.ref("Users/"+u+"/coins").set((s.val()||0)+a); db.ref("CoinRequests/"+id).remove(); }); }
+
 function addNewMatch() {
-    let mid = document.getElementById("newMatchId").value.trim();
-    let t1 = document.getElementById("team1Name").value.trim();
-    let t2 = document.getElementById("team2Name").value.trim();
-    let mDate = document.getElementById("matchDate").value; // Date ghetli
-    let mTime = document.getElementById("matchTime").value; // Time ghetla
-
-    // Validation: Sagli mahiti bharli aahe ka?
-    if(!mid || !t1 || !t2 || !mDate || !mTime) {
-        return alert("❌ कृपया सर्व माहिती भरा (Match ID, Teams, Date आणि Time)!");
-    }
-
-    // Firebase madhe save kara
-    db.ref("MatchList/" + mid).set({ 
-        name: t1 + " vs " + t2,
-        date: mDate,
-        time: mTime
-    }).then(() => {
-        alert("✅ मॅच यशस्वीरित्या तयार झाली!");
-        
-        // Inputs clear kara
-        document.getElementById("newMatchId").value = "";
-        document.getElementById("team1Name").value = "";
-        document.getElementById("team2Name").value = "";
-        document.getElementById("matchDate").value = "";
-        document.getElementById("matchTime").value = "";
-    }).catch(e => alert("Error: " + e.message));
+    let id = document.getElementById("newMatchId").value, t1 = document.getElementById("team1Name").value, t2 = document.getElementById("team2Name").value;
+    if(id && t1 && t2) db.ref("MatchList/"+id).set({name:t1+" vs "+t2}).then(()=>alert("Match Created!"));
 }
 
 function addPlayerToMatch() {
-    let mid = document.getElementById("targetMatch").value; // Nivadleli Match ID
-    let team = document.getElementById("playerTeam").value; // Team 1 ki Team 2
-    let pName = document.getElementById("playerName").value.trim(); // Player cha naav
-
-    if(!mid || !pName) return alert("Match निवडा आणि Player चे नाव टाका!");
-
-    // Player sathi ek unique ID banva (Timestamp mule duplicate hot nahi)
-    let pid = "p" + Date.now();
-
-    // Firebase madhe Player save kara
-    db.ref(`Players/${mid}/${team}/${pid}`).set(pName).then(() => {
-        // Player add jhalya nantar Scoreboard madhe tyache runs 0 set kara
-        db.ref(`LiveScore/${mid}/${pid}`).set(0);
-        
-        alert("✅ Player यशस्वीरीत्या Add झाला!");
-        document.getElementById("playerName").value = ""; // Input clear kara
-    }).catch(e => alert("Error: " + e.message));
-}
-
-function showAdmin() { 
-    document.getElementById("mainApp").classList.add("hidden"); 
-    document.getElementById("adminPanel").classList.remove("hidden"); 
-    loadAdminPlayers(); 
-    listenCoinRequests(); 
-    loadWinnerList(); // <--- He add kara
-}
-
-
-function closeAdmin() { 
-    document.getElementById("adminPanel").classList.add("hidden"); 
-    document.getElementById("mainApp").classList.remove("hidden"); 
+    let m = document.getElementById("targetMatch").value, t = document.getElementById("playerTeam").value, n = document.getElementById("playerName").value, pid = "p"+Date.now();
+    if(m && n) { db.ref(`Players/${m}/${t}/${pid}`).set(n); db.ref(`LiveScore/${m}/${pid}`).set(0); alert("Player Added!"); }
 }
 
 function loadAdminPlayers() {
-    let mid = document.getElementById("matchSelect").value;
-    if(!mid) return document.getElementById("adminPlayerList").innerHTML = "<p class='p-3'>Select match first!</p>";
-    db.ref("Players/" + mid).once("value", p => {
-        db.ref("LiveScore/" + mid).on("value", sc => {
-            let r = sc.val() || {}; let h = "";
-            p.forEach(team => {
-                h += `<div class="bg-dark text-white p-1 small ps-2">${team.key.toUpperCase()}</div>`;
-                team.forEach(player => {
-                    h += `<div class="d-flex justify-content-between p-1 border-bottom bg-white">
-                        <span class="ps-2">${player.val()}</span>
-                        <input type="number" class="form-control form-control-sm w-25" value="${r[player.key]||0}" 
-                        onchange="db.ref('LiveScore/${mid}/${player.key}').set(parseInt(this.value))">
-                    </div>`;
-                });
-            });
+    let m = document.getElementById("matchSelect").value; if(!m) return;
+    db.ref("Players/"+m).once("value", p => {
+        db.ref("LiveScore/"+m).on("value", sc => {
+            let r = sc.val()||{}, h = "";
+            p.forEach(team => { team.forEach(pl => { h += `<div class="d-flex justify-content-between mb-1"><span>${pl.val()}</span><input type="number" class="w-25" value="${r[pl.key]||0}" onchange="db.ref('LiveScore/${m}/${pl.key}').set(parseInt(this.value))"></div>`; }); });
             document.getElementById("adminPlayerList").innerHTML = h;
         });
     });
+    loadWinnerList();
 }
-// Admin panel ughdalyavar winner list bharne
+
 function loadWinnerList() {
-    let mid = document.getElementById("matchSelect").value;
-    if(!mid) return;
-    
-    db.ref("Selections/" + mid).once("value", s => {
-        let h = "<option value=''>-- Winner निवडा --</option>";
-        let seenUsers = new Set();
-        s.forEach(sel => {
-            let u = sel.val().u;
-            if(!seenUsers.has(u)) {
-                h += `<option value="${u}">${u.toUpperCase()}</option>`;
-                seenUsers.add(u);
-            }
-        });
+    let m = document.getElementById("matchSelect").value;
+    db.ref("Selections/"+m).once("value", s => {
+        let h = "<option value=''>-- निवडा --</option>", seen = new Set();
+        s.forEach(i => { if(!seen.has(i.val().u)) { h += `<option value="${i.val().u}">${i.val().u}</option>`; seen.add(i.val().u); }});
         document.getElementById("winnerSelect").innerHTML = h;
     });
 }
 
 function declareWinner() {
-    let mid = document.getElementById("matchSelect").value;
-    let winUser = document.getElementById("winnerSelect").value;
-
-    if(!mid || !winUser) return alert("कृपया मॅच आणि विनर निवडा!");
-    if(!confirm("तुम्ही " + winUser + " ला विनर घोषित करत आहात. खात्री आहे?")) return;
-
-    db.ref("Selections/" + mid).once("value", s => {
-        let totalJodis = s.numChildren();
-        let totalPool = totalJodis * 200;
-        let deduction = totalPool * 0.10;
-        let winningAmount = totalPool - deduction;
-
-        db.ref("Users/" + winUser + "/coins").once("value", uSnap => {
-            let currentCoins = uSnap.val() || 0;
-            let finalCoins = currentCoins + winningAmount;
-
-            // १. विनरला कॉइन्स देणे
-            db.ref("Users/" + winUser + "/coins").set(finalCoins);
-            
-            // २. मॅच रेकॉर्डमध्ये विनरचे नाव आणि रक्कम सेव्ह करणे (युजरला दिसण्यासाठी)
-            db.ref("MatchList/" + mid + "/winner").set({
-                user: winUser,
-                amount: winningAmount
-            }).then(() => {
-                alert("🏆 विनर घोषित आणि कॉइन्स जमा झाले!");
-            });
+    let m = document.getElementById("matchSelect").value, u = document.getElementById("winnerSelect").value;
+    if(!u) return alert("Winner निवडा!");
+    db.ref("Selections/"+m).once("value", s => {
+        let amt = (s.numChildren()*200)*0.9;
+        db.ref("Users/"+u+"/coins").once("value", snap => {
+            db.ref("Users/"+u+"/coins").set((snap.val()||0)+amt);
+            db.ref("MatchList/"+m+"/winner").set({user:u, amount:amt});
+            alert("Winner Announced!");
         });
     });
 }
 
-
-// Script tag sampnya aadhi yithe paste kara
-function logout() {
-    if(confirm("तुम्हाला लॉगआउट करायचे आहे का?")) {
-        // १. लोकल मेमरीमधून युजरचे नाव काढून टाका
-        localStorage.removeItem("jodiUser");
-        localStorage.removeItem("lastSelectedMatch");
-
-        // २. पेज रिफ्रेश करा जेणेकरून लॉगिन स्क्रीन येईल
-        window.location.reload();
-    }
-}
-
-function refreshScores() {
-    let mid = document.getElementById("matchSelect").value;
-    if(!mid) return alert("कृपया आधी मॅच निवडा!");
-    
-    // Refresh effect sathi scoreboard blur kara
-    let board = document.getElementById("scoreBoard");
-    board.style.transition = "opacity 0.3s";
-    board.style.opacity = "0.3";
-    
-    // Data punha fetch kara
-    listenScores(mid);
-    
-    // 0.5 second nantar parat normal kara
-    setTimeout(() => {
-        board.style.opacity = "1";
-    }, 500);
-}
-            
+function logout() { if(confirm("लॉगआउट?")) { localStorage.clear(); location.reload(); } }
+function toggleCoinReq() { document.getElementById("coinReqArea").classList.toggle("hidden"); }
+function refreshScores() { location.reload(); }
 </script>
-
 </body>
 </html>
