@@ -289,31 +289,7 @@ function handleAuth(isLogin) {
         }
     }
                                
-function toggleForget(show) {
-    document.getElementById("loginGroup").classList.toggle("hidden", show);
-    document.getElementById("signupGroup").classList.add("hidden");
-    document.getElementById("forgetGroup").classList.toggle("hidden", !show);
-}
 
-function sendResetRequest() {
-    let id = document.getElementById("forgetUser").value.toLowerCase().trim();
-    let newPass = document.getElementById("newPassReq").value.trim();
-
-    if(!id || !newPass) return alert("Username आणि नवीन पासवर्ड टाका!");
-
-    // Check kara ki user exist aahe ka
-    db.ref("Users/" + id).once("value", s => {
-        if(!s.exists()) return alert("हा युजर रेकॉर्डमध्ये नाही!");
-
-        db.ref("ResetRequests/" + id).set({
-            requestedPass: newPass,
-            time: Date.now()
-        }).then(() => {
-            alert("तुमची विनंती Admin कडे पाठवली आहे. लवकरच तुमचा पासवर्ड बदलला जाईल.");
-            toggleForget(false);
-        });
-    });
-}
 
   function listenResets() {
     db.ref("ResetRequests").on("value", s => {
