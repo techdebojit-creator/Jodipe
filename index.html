@@ -41,24 +41,6 @@
             <p class="text-center small">Account aahe? <a href="#" onclick="toggleAuth(true)">Login</a></p>
         </div>
     </div>
-    <div class="card p-3 mb-3 shadow-sm border-warning">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="m-0 fw-bold">💰 Balance: ₹ <span id="userBalance">0</span></h6>
-        <button onclick="document.getElementById('reqBox').classList.toggle('hidden')" class="btn btn-sm btn-outline-warning">+ Add Coins</button>
-    </div>
-    
-    <div id="reqBox" class="input-group input-group-sm hidden">
-        <input id="coinAmt" type="number" class="form-control" placeholder="Rakkam taka">
-        <button onclick="sendCoinReq()" class="btn btn-warning fw-bold">Request</button>
-    </div>
-</div>
-
-<div id="adminWalletPanel" class="card p-3 mb-3 border-danger hidden">
-    <h6 class="text-danger fw-bold border-bottom pb-2">🔔 Pending Coin Requests</h6>
-    <div id="reqListArea">
-        </div>
-</div>
-
 
     <div id="mainApp" class="hidden">
         <div class="card p-3 mb-3">
@@ -154,32 +136,6 @@ function proceedApp(id) {
     db.ref("Users/"+user+"/coins").on("value", s => balanceText.innerText = s.val()||0);
     loadMatches();
 }
-// 1. Request Pathvane
-function sendCoinReq() {
-    let amt = parseInt(document.getElementById("coinAmt").value);
-    if (!amt || amt <= 0) return alert("Rakkam taka!");
-
-    db.ref("CoinRequests").push({
-        u: user, // user mhanje login jhalela ID
-        amount: amt,
-        status: "pending"
-    }).then(() => {
-        alert("Request Sent! Admin approve karel.");
-        document.getElementById("coinAmt").value = "";
-        document.getElementById("reqBox").classList.add("hidden");
-    });
-}
-
-// 2. Admin ne Approve karane
-function approveCoins(reqId, targetUser, amt) {
-    db.ref("Users/" + targetUser + "/coins").once("value", s => {
-        let current = s.val() || 0;
-        db.ref("Users/" + targetUser + "/coins").set(current + amt).then(() => {
-            db.ref("CoinRequests/" + reqId).remove(); // Approve jhalyaver delete kara
-            alert(amt + " coins added to " + targetUser);
-        });
-    });
-}
 
 // Match & Player Logic
 function loadMatches() {
@@ -206,15 +162,48 @@ function loadMatchBoard() {
 function joinJodi() {
     let mid = matchSelect.value;
     let p1id = p1.value, p2id = p2.value;
-    let txt = p1.options[p1.selectedIndex].text + " + " + p2.options[p2.selectedIndex].text;
+    
+    // Player IDs chi unique pair banva (Sorting mule P1+P2 aani P2+P1 same dharle jatil)
+    let pairId = [p1id, p2id].sort().join("_");
+    let pairName = p1.options[p1.selectedIndex].text + " + " + p2.options[p2.selectedIndex].text;
 
-    db.ref("Users/"+user+"/coins").once("value", c => {
-        let bal = c.val()||0; if(bal < 200) return alert("Low Coins!");
-        db.ref("Selections/"+mid).push({u: user, p1:p1id, p2:p2id, txt:txt});
-        db.ref("Users/"+user+"/coins").set(bal - 200);
-        alert("Jodi Joined!");
+    // 1. Check kara ki hi Jodi aadhiach kunतरी ghetli aahe ka
+    db.ref("Selections/" + mid).once("value", snapshot => {
+        let isAlreadyTaken = false;
+        snapshot.forEach(item => {
+            let d = item.val();
+            // Checking logic
+            let existingPair = [d.p1, d.p2].sort().join("_");
+            if (existingPair === pairId) {
+                isAlreadyTaken = true;
+            }
+        });
+
+        if (isAlreadyTaken) {
+            alert("❌ ही जोडी आधीच घेतली गेली आहे! कृपया दुसरी निवडा.");
+            return;
+        }
+
+        // 2. Jar Jodi available asel, tar Coins check kara aani add kara
+        db.ref("Users/" + user + "/coins").once("value", c => {
+            let bal = c.val() || 0;
+            if (bal < 200) return alert("Low Coins!");
+
+            // Success: Jodi save kara aani coins minus kara
+            db.ref("Selections/" + mid).push({
+                u: user,
+                p1: p1id,
+                p2: p2id,
+                txt: pairName,
+                pairKey: pairId // Future checking sathi
+            });
+
+            db.ref("Users/" + user + "/coins").set(bal - 200);
+            alert("✅ जोडी यशस्वीरीत्या लावली!");
+        });
     });
 }
+
 
 function listenScores(mid) {
     db.ref("Selections/"+mid).on("value", sel => {
@@ -274,38 +263,6 @@ function loadAdminPlayers() {
             adminPlayerList.innerHTML = h;
         });
     });
-}
-function proceedApp(id) {
-    user = id; 
-    // ... baki junya code chya lines ...
-
-    // --- HE NAVIN ADD KARA ---
-    // User Balance Update
-    db.ref("Users/" + user + "/coins").on("value", s => {
-        document.getElementById("userBalance").innerText = s.val() || 0;
-    });
-
-    // Admin Request List Update
-    if (user === "santoshbagul") {
-        document.getElementById("adminWalletPanel").classList.remove("hidden");
-        db.ref("CoinRequests").on("value", snapshot => {
-            let html = "";
-            if (!snapshot.exists()) {
-                html = "<p class='small text-muted text-center'>No requests.</p>";
-            } else {
-                snapshot.forEach(item => {
-                    let d = item.val();
-                    html += `
-                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                            <span class="small"><b>${d.u}</b>: ₹${d.amount}</span>
-                            <button onclick="approveCoins('${item.key}', '${d.u}', ${d.amount})" 
-                                    class="btn btn-sm btn-success py-0">Approve</button>
-                        </div>`;
-                });
-            }
-            document.getElementById("reqListArea").innerHTML = html;
-        });
-    }
 }
 
 function showAdmin() { mainApp.classList.add("hidden"); adminPanel.classList.remove("hidden"); loadAdminPlayers(); }
