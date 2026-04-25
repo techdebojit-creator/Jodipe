@@ -179,7 +179,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.21 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.22 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -434,16 +434,28 @@ function loadMatches() {
             let d = m.val();
             h += `<option value="${m.key}">${d.name} (${d.date} | ${d.time})</option>`;
         });
-        document.getElementById("matchSelect").innerHTML = h;
 
-        // --- Memory madhun juni match set kara ---
+        // १. मेन स्क्रीनवरचा ड्रॉपडाऊन अपडेट करा
+        let mainSelect = document.getElementById("matchSelect");
+        if(mainSelect) mainSelect.innerHTML = h;
+
+        // २. ऍडमिन पॅनलमधला 'Add Player' चा ड्रॉपडाऊन अपडेट करा (हे विसरू नकोस)
+        let adminTarget = document.getElementById("targetMatch");
+        if(adminTarget) adminTarget.innerHTML = h;
+
+        // ३. विनर घोषित करण्याचा ड्रॉपडाऊन (Winner Select) पण अपडेट करा
+        let winSelect = document.getElementById("winnerSelect");
+        if(winSelect) winSelect.innerHTML = h;
+
+        // --- मेमरीमधून जुनी मॅच सेट करा ---
         let lastMatch = localStorage.getItem("lastSelectedMatch");
-        if(lastMatch && document.getElementById("matchSelect").querySelector(`option[value="${lastMatch}"]`)) {
-            document.getElementById("matchSelect").value = lastMatch;
-            loadMatchBoard(); // Automatic players load hotil
+        if(lastMatch && mainSelect && mainSelect.querySelector(`option[value="${lastMatch}"]`)) {
+            mainSelect.value = lastMatch;
+            loadMatchBoard(); 
         }
     });
 }
+
 
 function loadMatchBoard() {
     let mid = document.getElementById("matchSelect").value; 
