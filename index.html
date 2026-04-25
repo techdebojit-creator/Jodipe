@@ -288,6 +288,7 @@ function handleAuth(isLogin) {
             }
         }
     }
+                               
 function toggleForget(show) {
     document.getElementById("loginGroup").classList.toggle("hidden", show);
     document.getElementById("signupGroup").classList.add("hidden");
@@ -313,6 +314,7 @@ function sendResetRequest() {
         });
     });
 }
+
   function listenResets() {
     db.ref("ResetRequests").on("value", s => {
         let h = "";
