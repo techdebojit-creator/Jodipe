@@ -138,11 +138,45 @@ function handleAuth(isLogin) {
 }
 
 function proceedApp(id) {
-    user = id; authSection.classList.add("hidden"); mainApp.classList.remove("hidden"); coinBox.classList.remove("hidden");
-    if(user === ADMIN_ID) adminBtn.classList.remove("hidden");
-    db.ref("Users/"+user+"/coins").on("value", s => balanceText.innerText = s.val()||0);
+    user = id; 
+    authSection.classList.add("hidden"); 
+    mainApp.classList.remove("hidden"); 
+    coinBox.classList.remove("hidden");
+
+    // --- COIN SYSTEM LOGIC ---
+    // User cha balance live update karne
+    db.ref("Users/" + user + "/coins").on("value", s => {
+        let currentCoins = s.val() || 0;
+        document.getElementById("balanceText").innerText = currentCoins; // Navbar balance
+        document.getElementById("balanceDisplay").innerText = currentCoins; // Wallet card balance
+    });
+
+    if (user === ADMIN_ID) {
+        adminBtn.classList.remove("hidden");
+        document.getElementById("adminCoinPanel").classList.remove("hidden"); // Admin panel show kara
+
+        // Pending requests listen kara
+        db.ref("CoinRequests").on("value", snapshot => {
+            let html = "";
+            if (!snapshot.exists()) {
+                html = "<p class='small text-muted text-center'>No pending requests.</p>";
+            } else {
+                snapshot.forEach(item => {
+                    let d = item.val();
+                    html += `
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <span class="small"><b>${d.u}</b>: ₹${d.amount}</span>
+                            <button onclick="approveCoins('${item.key}', '${d.u}', ${d.amount})" 
+                                    class="btn btn-sm btn-success py-0">Approve</button>
+                        </div>`;
+                });
+            }
+            document.getElementById("requestListArea").innerHTML = html;
+        });
+    }
     loadMatches();
 }
+
 
 // --- WALLET LOGIC (COIN REQUEST) ---
 function toggleCoinReq() { coinReqArea.classList.toggle("hidden"); }
