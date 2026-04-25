@@ -258,40 +258,49 @@ function toggleAuth(isLogin) {
     document.getElementById("loginGroup").classList.toggle("hidden", !isLogin);
     document.getElementById("signupGroup").classList.toggle("hidden", isLogin);
 }
+// --- AUTH SYSTEM (LOGIN/SIGNUP) ---
+function toggleAuth(isLogin) {
+    document.getElementById("authTitle").innerText = isLogin ? "Login" : "Sign Up";
+    document.getElementById("loginGroup").classList.toggle("hidden", !isLogin);
+    document.getElementById("signupGroup").classList.toggle("hidden", isLogin);
+}
+
 function handleAuth(isLogin) {
     let id = document.getElementById("userId").value.toLowerCase().trim();
     let pass = document.getElementById("userPass").value.trim();
 
-    if(!id || !pass) return alert("Username आणि Password टाka!");
+    if(!id || !pass) return alert("Username आणि Password टाका!");
 
     db.ref("Users/" + id).once("value", s => {
         if(isLogin) {
+            // Login Logic
             if(s.exists() && s.val().password === pass) {
                 proceedApp(id);
             } else {
                 alert("चुकीचा पासवर्ड किंवा युजरनेम!");
             }
         } else {
+            // Sign Up Logic
             if(s.exists()) {
                 alert("हा युजर आधीच आहे!");
             } else {
-                // 👇 NAVIN SECURITY CHECK YITHE ADD KELA AAHE 👇
                 let passPattern = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/;
                 if(!passPattern.test(pass)) {
                     return alert("❌ सुरक्षा कारणामुळे: पासवर्ड किमान ६ अक्षरी असावा आणि त्यात किमान एक नंबर व एक चिन्ह (@, #, $, %) असावे!");
                 }
-                // 👆 SECURITY CHECK SAMPALA 👆
                 db.ref("Users/" + id).set({ password: pass, coins: 500 }).then(() => {
                     alert("Registration झाले!");
                     proceedApp(id);
                 });
             }
         }
-    }
-                            
-  function proceedApp(id) {
+    }); // <--- Ha bracket tumchya code madhe missing hota
+}
+
+// proceedApp function handleAuth chya baher pahije
+function proceedApp(id) {
     user = id; 
-    localStorage.setItem("jodiUser", id); // ID phone chya memory madhe save kela
+    localStorage.setItem("jodiUser", id); 
 
     document.getElementById("authSection").classList.add("hidden"); 
     document.getElementById("mainApp").classList.remove("hidden"); 
@@ -307,6 +316,7 @@ function handleAuth(isLogin) {
 
     loadMatches();
 }
+
 
 // --- WALLET LOGIC ---
 function toggleCoinReq() { 
