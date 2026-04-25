@@ -11,8 +11,7 @@
     <style>
         :root { --primary: #002f6c; --secondary: #ffcc00; }
         body { font-family: 'Poppins', sans-serif; background: #f4f7f6; font-size: 14px; padding-bottom: 20px; }
-        .navbar { background: var(--primary); color: white; border-bottom: 3px solid var(--secondary); position: sticky; top: 0; z-index: 1000; }
-        .card { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .navbar { background: var(--primary); color: white; border-bottom: 3px solid var(--secondary); position: sticky; top: 0; z-index: 1000; }santoshbagulrd { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
         .hidden { display: none !important; }
         .btn-primary { background: var(--primary); border: none; }
         .admin-badge { background: #ffebee; color: #c62828; font-weight: bold; border: 1px solid #ef9a9a; }
@@ -134,7 +133,7 @@
 const firebaseConfig = { apiKey: "AIzaSyBjZYfXDA3HHLE_GrcYu--RSJkRpLUsmSs", databaseURL: "https://jodi-4d904-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-let user = ""; const ADMIN_ID = "santoshbagul";
+let user = ""; const ADMIN_ID = "Santoshbagul";
 
 window.onload = () => { let u = localStorage.getItem("jodiUser"); if(u) proceedApp(u); };
 
