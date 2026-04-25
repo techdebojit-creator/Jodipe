@@ -80,7 +80,12 @@
             </div>
         </div>
 
-        <h6 class="fw-bold">📊 LIVE STANDINGS</h6>
+        <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
+    <h6 class="fw-bold m-0 text-dark">📊 LIVE STANDINGS</h6>
+    <button onclick="refreshScores()" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 shadow-sm px-3" style="border-radius: 20px; font-size: 12px;">
+        <span>🔄</span> Refresh
+    </button>
+</div>
         <div id="scoreBoard" class="card p-2 mb-4" style="min-height: 100px;"></div>
 
         <div class="d-flex gap-2 pb-5">
@@ -160,7 +165,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.7 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.8 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -407,40 +412,39 @@ function loadMatches() {
         let h = "<option value=''>-- मॅच निवडा --</option>";
         s.forEach(m => {
             let d = m.val();
-            // Match chya naava sobat Date aani Time dakhva
             h += `<option value="${m.key}">${d.name} (${d.date} | ${d.time})</option>`;
         });
         document.getElementById("matchSelect").innerHTML = h;
+
+        // --- Memory madhun juni match set kara ---
+        let lastMatch = localStorage.getItem("lastSelectedMatch");
+        if(lastMatch && document.getElementById("matchSelect").querySelector(`option[value="${lastMatch}"]`)) {
+            document.getElementById("matchSelect").value = lastMatch;
+            loadMatchBoard(); // Automatic players load hotil
+        }
     });
 }
-
 
 function loadMatchBoard() {
     let mid = document.getElementById("matchSelect").value; 
     if(!mid) return;
+
+    // --- Match ID memory madhe save kara ---
+    localStorage.setItem("lastSelectedMatch", mid);
+
     document.getElementById("playArea").classList.remove("hidden");
 
     db.ref("Players/" + mid).on("value", s => {
-        let d = s.val(); 
-        if(!d) return;
-
+        let d = s.val(); if(!d) return;
         let allPlayersHtml = "<option value=''>Nivda</option>";
-        
-        // Team 1 che players add kara
-        for(let k in d.team1) {
-            allPlayersHtml += `<option value="${k}">${d.team1[k]} (T1)</option>`;
-        }
-        // Team 2 che players pan tech dropdown madhe add kara
-        for(let k in d.team2) {
-            allPlayersHtml += `<option value="${k}">${d.team2[k]} (T2)</option>`;
-        }
-
-        // Doghi dropdown madhe sagle players bharun taka
+        for(let k in d.team1) allPlayersHtml += `<option value="${k}">${d.team1[k]} (T1)</option>`;
+        for(let k in d.team2) allPlayersHtml += `<option value="${k}">${d.team2[k]} (T2)</option>`;
         document.getElementById("p1").innerHTML = allPlayersHtml;
         document.getElementById("p2").innerHTML = allPlayersHtml;
     });
     listenScores(mid);
 }
+
 
 function joinJodi() {
     let mid = document.getElementById("matchSelect").value;
@@ -633,6 +637,23 @@ function loadAdminPlayers() {
 function logout() {
     localStorage.removeItem("jodiUser"); // Memory madhun user ID kadhun taka
     location.reload(); // App la refresh kara jyamule login screen disel
+}
+function refreshScores() {
+    let mid = document.getElementById("matchSelect").value;
+    if(!mid) return alert("कृपया आधी मॅच निवडा!");
+    
+    // Refresh effect sathi scoreboard blur kara
+    let board = document.getElementById("scoreBoard");
+    board.style.transition = "opacity 0.3s";
+    board.style.opacity = "0.3";
+    
+    // Data punha fetch kara
+    listenScores(mid);
+    
+    // 0.5 second nantar parat normal kara
+    setTimeout(() => {
+        board.style.opacity = "1";
+    }, 500);
 }
             
 </script>
