@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.02</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.03</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -124,15 +124,30 @@ function toggleAuth(isLogin) {
 function handleAuth(isLogin) {
     let id = userId.value.toLowerCase().trim();
     let pass = userPass.value.trim();
-    if(!id || !pass) return alert("All fields required!");
+    if(!id || !pass) return alert("Please enter Username & Password!");
 
     db.ref("Users/"+id).once("value", s => {
         if(isLogin) {
-            if(s.exists() && s.val().password === pass) proceedApp(id);
-            else alert("Invalid Login!");
+            // Login Logic: Password check karne garjeche aahe
+            if(s.exists() && s.val().password === pass) {
+                proceedApp(id);
+            } else {
+                alert("चुकीचा Username किंवा Password!");
+            }
         } else {
-            if(s.exists()) alert("User already exists!");
-            else db.ref("Users/"+id).set({password:pass, coins:0}).then(()=> proceedApp(id));
+            // Sign Up Logic: Password aani Coins doghi save kara
+            if(s.exists()) {
+                alert("हा User आधीपासून आहे! कृपया Login करा.");
+            } else {
+                // Yithe password save karne mukhya aahe
+                db.ref("Users/"+id).set({
+                    password: pass, 
+                    coins: 500 // Navin user la 500 coins gift (hve aslyas 0 kara)
+                }).then(() => {
+                    alert("Account तयार झाले!");
+                    proceedApp(id);
+                });
+            }
         }
     });
 }
