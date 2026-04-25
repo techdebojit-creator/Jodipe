@@ -179,7 +179,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.20 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.21 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -621,24 +621,36 @@ function addNewMatch() {
 }
 
 function addPlayerToMatch() {
-    let mid = document.getElementById("targetMatch").value; // Nivadleli Match ID
-    let team = document.getElementById("playerTeam").value; // Team 1 ki Team 2
-    let pName = document.getElementById("playerName").value.trim(); // Player cha naav
+    let mid = document.getElementById("targetMatch").value; 
+    let team = document.getElementById("playerTeam").value; 
+    let pInput = document.getElementById("playerName").value.trim(); 
 
-    if(!mid || !pName) return alert("Match निवडा आणि Player चे नाव टाका!");
+    if(!mid || !pInput) {
+        return alert("❌ संतोषजी, कृपया मॅच निवडा आणि खेळाडूंची नावे टाका!");
+    }
 
-    // Player sathi ek unique ID banva (Timestamp mule duplicate hot nahi)
-    let pid = "p" + Date.now();
+    // स्वल्पविराम (comma) देऊन एकापेक्षा जास्त नावे घेता येतील
+    let playerList = pInput.split(",");
+    let count = 0;
 
-    // Firebase madhe Player save kara
-    db.ref(`Players/${mid}/${team}/${pid}`).set(pName).then(() => {
-        // Player add jhalya nantar Scoreboard madhe tyache runs 0 set kara
-        db.ref(`LiveScore/${mid}/${pid}`).set(0);
-        
-        alert("✅ Player यशस्वीरीत्या Add झाला!");
-        document.getElementById("playerName").value = ""; // Input clear kara
-    }).catch(e => alert("Error: " + e.message));
+    playerList.forEach(name => {
+        let cleanName = name.trim();
+        if(cleanName !== "") {
+            let pid = "p" + Math.floor(Math.random() * 1000000); 
+
+            // Firebase मध्ये Player आणि 0 रन्स सेट करणे
+            db.ref(`Players/${mid}/${team}/${pid}`).set(cleanName);
+            db.ref(`LiveScore/${mid}/${pid}`).set(0);
+            count++;
+        }
+    });
+
+    if(count > 0) {
+        alert("✅ संतोषजी, " + count + " खेळाडू यशस्वीरीत्या लिस्टमध्ये ॲड झाले आहेत!");
+        document.getElementById("playerName").value = ""; 
+    }
 }
+
 
 function showAdmin() { 
     document.getElementById("mainApp").classList.add("hidden"); 
