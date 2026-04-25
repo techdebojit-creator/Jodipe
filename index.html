@@ -172,7 +172,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Jodi11 Pro V.1.14.11 Developed & Managed by ❤️</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.12 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -339,18 +339,35 @@ function toggleCoinReq() {
 
 function sendCoinRequest() {
     let amt = parseInt(document.getElementById("reqAmt").value);
-    if(!amt || amt <= 0) return alert("योग्य रक्कम टाका!");
     
-    db.ref("CoinRequests").push({
-        u: user,
-        amount: amt,
-        time: Date.now()
-    }).then(() => {
-        alert("Request पाठवली! ऍडमिन लवकरच अप्रूव्ह करतील.");
-        document.getElementById("reqAmt").value = ""; 
-        toggleCoinReq();
-    });
+    // १. बेसिक व्हॅलिडेशन
+    if(!amt || amt <= 0) {
+        return alert("❌ कृपया योग्य रक्कम टाका!");
+    }
+
+    // २. 👇 १००० ची मर्यादा (Limit Check) 👇
+    if(amt > 1000) {
+        return alert("❌ मर्यादा: तुम्ही एका वेळी जास्तीत जास्त १००० कॉइन्सचीच विनंती करू शकता!");
+    }
+    
+    // ३. युजरकडून कन्फर्मेशन घ्या
+    let confirmMsg = `तुम्ही ₹${amt} कॉइन्ससाठी विनंती पाठवत आहात.\n\nतुम्ही खात्रीशीर आहात का?`;
+    
+    if (confirm(confirmMsg)) {
+        db.ref("CoinRequests").push({
+            u: user,
+            amount: amt,
+            time: Date.now()
+        }).then(() => {
+            alert("✅ तुमची विनंती यशस्वीरीत्या पाठवली आहे! ऍडमिन लवकरच अप्रूव्ह करतील.");
+            document.getElementById("reqAmt").value = ""; 
+            toggleCoinReq(); 
+        }).catch((error) => {
+            alert("❌ एरर: विनंती पाठवता आली नाही.");
+        });
+    }
 }
+
 
 function listenCoinRequests() {
     db.ref("CoinRequests").on("value", s => {
