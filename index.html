@@ -288,34 +288,7 @@ function handleAuth(isLogin) {
             }
         }
     }
-                               
-
-
-  function listenResets() {
-    db.ref("ResetRequests").on("value", s => {
-        let h = "";
-        if(!s.exists()) {
-            h = "<p class='text-center text-muted small'>No requests.</p>";
-        } else {
-            s.forEach(req => {
-                let d = req.val();
-                h += `<div class="d-flex justify-content-between align-items-center border-bottom p-2 mb-2 bg-white rounded">
-                        <div><b>${req.key}</b><br><small>New: ${d.requestedPass}</small></div>
-                        <button onclick="approvePassword('${req.key}', '${d.requestedPass}')" class="btn btn-sm btn-danger">Change</button>
-                      </div>`;
-            });
-        }
-        document.getElementById("adminResetList").innerHTML = h;
-    });
-}
-
-function approvePassword(targetUser, newPass) {
-    db.ref("Users/" + targetUser + "/password").set(newPass).then(() => {
-        db.ref("ResetRequests/" + targetUser).remove();
-        alert(targetUser + " चा पासवर्ड यशस्वीरित्या बदलला!");
-    });
-}
-
+                            
   function proceedApp(id) {
     user = id; 
     localStorage.setItem("jodiUser", id); // ID phone chya memory madhe save kela
