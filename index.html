@@ -295,8 +295,6 @@ function joinJodi() {
         });
     });
 }
-
-function listenScores(mid) {
 function listenScores(mid) {
     db.ref("Selections/" + mid).on("value", sel => {
         db.ref("LiveScore/" + mid).on("value", sc => {
