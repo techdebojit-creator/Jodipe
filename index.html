@@ -23,7 +23,7 @@
 
 <nav class="navbar px-3 py-2">
     <div class="container-fluid d-flex justify-content-between">
-        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.14.3</h5>
+        <h5 class="m-0 fw-bold">🏏 JODI11 PRO v.1.14.4</h5>
         <div id="coinBox" class="hidden d-flex align-items-center gap-2">
             <span class="badge bg-light text-dark shadow-sm">💰 <span id="balanceText">0</span></span>
             <button onclick="toggleCoinReq()" class="btn btn-sm btn-warning fw-bold">+</button>
@@ -100,7 +100,7 @@
             </a>
 
             <div class="text-center mt-2">
-                <small class="text-muted">Developed & Managed by v.1.14.3</small><br>
+                <small class="text-muted">Jodi11 Pro V.1.14.4 Developed & Managed by ❤️</small><br>
                 <span class="fw-bold text-dark">SANTOSH BAGUL</span>
             </div>
         </div>
@@ -124,6 +124,16 @@
             <input id="newMatchId" class="form-control form-control-sm mb-2" placeholder="Match ID (MI_vs_RCB)">
             <input id="team1Name" class="form-control form-control-sm mb-2" placeholder="Team 1 Name">
             <input id="team2Name" class="form-control form-control-sm mb-2" placeholder="Team 2 Name">
+            <div class="row g-2 mb-2">
+        <div class="col-6">
+            <label class="small fw-bold text-muted">तारीख निवडा</label>
+            <input id="matchDate" type="date" class="form-control form-control-sm">
+        </div>
+        <div class="col-6">
+            <label class="small fw-bold text-muted">वेळ निवडा</label>
+            <input id="matchTime" type="time" class="form-control form-control-sm">
+        </div>
+    </div>
             <button onclick="addNewMatch()" class="btn btn-primary btn-sm w-100">Create Match</button>
         </div>
  <div class="card p-3 mb-3 border-success">
@@ -418,11 +428,33 @@ function listenScores(mid) {
 
 function addNewMatch() {
     let mid = document.getElementById("newMatchId").value.trim();
-    let t1 = document.getElementById("team1Name").value;
-    let t2 = document.getElementById("team2Name").value;
-    db.ref("MatchList/" + mid).set({ name: t1 + " vs " + t2 });
-    alert("Match Created!");
+    let t1 = document.getElementById("team1Name").value.trim();
+    let t2 = document.getElementById("team2Name").value.trim();
+    let mDate = document.getElementById("matchDate").value; // Date ghetli
+    let mTime = document.getElementById("matchTime").value; // Time ghetla
+
+    // Validation: Sagli mahiti bharli aahe ka?
+    if(!mid || !t1 || !t2 || !mDate || !mTime) {
+        return alert("❌ कृपया सर्व माहिती भरा (Match ID, Teams, Date आणि Time)!");
+    }
+
+    // Firebase madhe save kara
+    db.ref("MatchList/" + mid).set({ 
+        name: t1 + " vs " + t2,
+        date: mDate,
+        time: mTime
+    }).then(() => {
+        alert("✅ मॅच यशस्वीरित्या तयार झाली!");
+        
+        // Inputs clear kara
+        document.getElementById("newMatchId").value = "";
+        document.getElementById("team1Name").value = "";
+        document.getElementById("team2Name").value = "";
+        document.getElementById("matchDate").value = "";
+        document.getElementById("matchTime").value = "";
+    }).catch(e => alert("Error: " + e.message));
 }
+
 function addPlayerToMatch() {
     let mid = document.getElementById("targetMatch").value; // Nivadleli Match ID
     let team = document.getElementById("playerTeam").value; // Team 1 ki Team 2
