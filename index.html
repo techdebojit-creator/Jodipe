@@ -306,7 +306,7 @@ function handleAuth(isLogin) {
             } else {
                 // सोपा पासवर्ड चेक (किंवा तुमचा रेगुलर एक्सप्रेसशन वापरा)
                 if(pass.length < 6) return alert("पास्वर्ड किमान ६ अक्षरी असावा!");
-                db.ref("Users/" + id).set({ password: pass, coins: 500 }).then(() => {
+                db.ref("Users/" + id).set({ password: pass, coins: 0 }).then(() => {
                     alert("Registration झाले!");
                     proceedApp(id);
                 });
